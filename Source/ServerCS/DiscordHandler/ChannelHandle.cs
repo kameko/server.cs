@@ -23,23 +23,29 @@ namespace ServerCS.DiscordHandler
         
         public async Task<RestUserMessage> Send(OutgoingMessage message)
         {
-            return await channel.SendMessageAsync(
-                text    : message.Content,
-                embed   : message.Embed,
-                options : message.RequestOptions
-            );
+            if (message.File is null)
+            {
+                return await channel.SendMessageAsync(
+                    text    : message.Content,
+                    isTTS   : message.IsTTS,
+                    embed   : message.Embed,
+                    options : message.RequestOptions
+                );
+            }
+            else
+            {
+                return await channel.SendFileAsync(
+                    stream    : message.File.Stream,
+                    filename  : message.File.FileName,
+                    text      : message.Content,
+                    isTTS     : message.IsTTS,
+                    embed     : message.Embed,
+                    options   : message.RequestOptions,
+                    isSpoiler : message.File.Spoiler
+                );
+            }
         }
         
-        public async Task<RestUserMessage> SendFile(File file, OutgoingMessage message)
-        {
-            return await channel.SendFileAsync(
-                stream    : file.Stream,
-                filename  : file.FileName,
-                text      : message.Content,
-                embed     : message.Embed,
-                options   : message.RequestOptions,
-                isSpoiler : file.Spoiler
-            );
-        }
+        // TODO: iterate over all messages
     }
 }
