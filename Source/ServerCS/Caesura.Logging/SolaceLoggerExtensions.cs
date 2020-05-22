@@ -127,6 +127,11 @@ namespace Caesura.Logging
             RawLog(LogLevel.Trace, logger, exception, message, args);
         }
         
+        public static void Raw(this ILogger logger, LogLevel level, Exception? exception, string message, params object[] args)
+        {
+            RawLog(level, logger, exception, message, args);
+        }
+        
         private static void RawLog(LogLevel level, ILogger logger, Exception? exception, string message, params object[] args)
         {
             logger.Log<SolaceLogState>(level, GetId(logger), SolaceLogState.Create(message, args), exception, Formatter);

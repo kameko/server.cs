@@ -32,6 +32,7 @@ namespace ServerCS
                             config.TrimNames = new List<string>()
                             {
                                 "ServerCS.Controllers.",
+                                "ServerCS.",
                                 "System.Net.Http.",
                             };
                         });

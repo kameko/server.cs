@@ -13,38 +13,58 @@ namespace ServerCS
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
+    using Caesura.Logging;
     using Services;
+    using DiscordHandler;
     
     public class Startup
     {
-        private IConfiguration Configuration { get; }
+        private IConfiguration config;
+        private ServiceProvider serviceProvider;
         
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            config = configuration;
+            serviceProvider = null!;
+        }
+        
+        private Task Run(ILogger log, DiscordClient discord)
+        {
+            
+            return Task.CompletedTask;
         }
         
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<ConsoleLifetimeOptions>(opts => opts.SuppressStatusMessages = true);
+            
             services.AddHostedService<LifetimeEventsHostedService>();
             
+            services.AddSingleton<IDiscordClient, DiscordClient>();
+            services.AddSingleton<Runtime>();
+            
             services.AddControllers();
+            
+            serviceProvider = services.BuildServiceProvider();
         }
         
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> log)
         {
             app.UseDeveloperExceptionPage();
             
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             
             app.UseRouting();
             
-            app.UseAuthorization();
+            //app.UseAuthorization();
             
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+            
+            var runtime = ActivatorUtilities.CreateInstance<Runtime>(serviceProvider);
+            runtime.Start();
         }
     }
 }
