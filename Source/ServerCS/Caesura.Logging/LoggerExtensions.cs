@@ -5,7 +5,7 @@ namespace Caesura.Logging
     using System.Runtime.CompilerServices;
     using Microsoft.Extensions.Logging;
     
-    public static class SolaceLoggerExtensions
+    public static class LoggerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void InstanceAbreaction(this ILogger logger)
@@ -37,15 +37,15 @@ namespace Caesura.Logging
             logger.Trace($"Exiting {method_name} " + message, args);
         }
         
-        public static ILoggingBuilder AddSolaceConsoleLogger(this ILoggingBuilder builder)
+        public static ILoggingBuilder AddCaesuraConsoleLogger(this ILoggingBuilder builder)
         {
-            AddSolaceConsoleLogger(builder, null);
+            AddCaesuraConsoleLogger(builder, null);
             return builder;
         }
         
-        public static ILoggingBuilder AddSolaceConsoleLogger(this ILoggingBuilder builder, LogLevel log_level)
+        public static ILoggingBuilder AddCaesuraConsoleLogger(this ILoggingBuilder builder, LogLevel log_level)
         {
-            var config = new SolaceConsoleLoggerConfiguration()
+            var config = new ConsoleLoggerConfiguration()
             {
                 LogLevel = log_level,
             };
@@ -56,9 +56,9 @@ namespace Caesura.Logging
             return builder;
         }
         
-        public static ILoggingBuilder AddSolaceConsoleLogger(this ILoggingBuilder builder, Action<SolaceConsoleLoggerConfiguration>? configure)
+        public static ILoggingBuilder AddCaesuraConsoleLogger(this ILoggingBuilder builder, Action<ConsoleLoggerConfiguration>? configure)
         {
-            var config = new SolaceConsoleLoggerConfiguration();
+            var config = new ConsoleLoggerConfiguration();
             configure?.Invoke(config);
             
             var provider = new SolaceConsoleLoggerProvider(config);

@@ -25,7 +25,7 @@ namespace ServerCS
                 {
                     logging
                         .ClearProviders()
-                        .AddSolaceConsoleLogger(config =>
+                        .AddCaesuraConsoleLogger(config =>
                         {
                             config.Token = LifetimeEventsHostedService.Token;
                             config.LogLevel  = LogLevel.Trace;

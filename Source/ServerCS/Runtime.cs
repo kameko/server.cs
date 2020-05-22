@@ -18,7 +18,7 @@ namespace ServerCS
     {
         private IConfiguration config;
         private ILogger log;
-        private CancellationTokenSource cancellation_token_source;
+        private CancellationTokenSource cts;
         private IDiscordClient discord;
         
         public Runtime(IConfiguration configuration, ILogger<Runtime> logger, IDiscordClient discord_client)
@@ -26,9 +26,9 @@ namespace ServerCS
             config  = configuration;
             log     = logger;
             discord = discord_client;
+            cts     = new CancellationTokenSource();
             
-            cancellation_token_source = new CancellationTokenSource();
-            LifetimeEventsHostedService.OnStopping += () => cancellation_token_source.Cancel();
+            LifetimeEventsHostedService.OnStopping += () => cts.Cancel();
             
             log.InstanceAbreaction();
         }

@@ -163,22 +163,22 @@ namespace Caesura.Logging
             var original_foreground = Console.ForegroundColor;
             var original_background = Console.BackgroundColor;
             
-            if (item.Configuration.StringifyOption == SolaceConsoleLoggerConfiguration.ObjectStringifyOption.CallToString)
+            if (item.Configuration.StringifyOption == ConsoleLoggerConfiguration.ObjectStringifyOption.CallToString)
             {
                 WriteState();
             }
-            else if (item.Configuration.StringifyOption == SolaceConsoleLoggerConfiguration.ObjectStringifyOption.SerializeJsonPretty)
+            else if (item.Configuration.StringifyOption == ConsoleLoggerConfiguration.ObjectStringifyOption.SerializeJsonPretty)
             {
                 WriteJson(indent: true);
             }
-            else if (item.Configuration.StringifyOption == SolaceConsoleLoggerConfiguration.ObjectStringifyOption.SerializeJsonRaw)
+            else if (item.Configuration.StringifyOption == ConsoleLoggerConfiguration.ObjectStringifyOption.SerializeJsonRaw)
             {
                 WriteJson(indent: false);
             }
             else
             {
                 errors.Add(
-                    $"Unrecognized {nameof(SolaceConsoleLoggerConfiguration.ObjectStringifyOption)} "
+                    $"Unrecognized {nameof(ConsoleLoggerConfiguration.ObjectStringifyOption)} "
                   + $"option: {item.Configuration.StringifyOption}."
                 );
             }

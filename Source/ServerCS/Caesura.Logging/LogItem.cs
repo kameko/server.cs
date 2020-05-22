@@ -8,7 +8,7 @@ namespace Caesura.Logging
     
     public class LogItem
     {
-        public SolaceConsoleLoggerConfiguration Configuration { get; set; }
+        public ConsoleLoggerConfiguration Configuration { get; set; }
         public DateTime TimeStamp { get; set; }
         public LogLevel Level { get; set; }
         public EventId Id { get; set; }
@@ -16,7 +16,7 @@ namespace Caesura.Logging
         public object? State { get; set; }
         public Exception? Exception { get; set; }
         
-        public LogItem(SolaceConsoleLoggerConfiguration config, LogLevel logLevel, EventId eventId, string name, object? state, Exception? exception)
+        public LogItem(ConsoleLoggerConfiguration config, LogLevel logLevel, EventId eventId, string name, object? state, Exception? exception)
         {
             TimeStamp     = DateTime.UtcNow;
             Configuration = config;

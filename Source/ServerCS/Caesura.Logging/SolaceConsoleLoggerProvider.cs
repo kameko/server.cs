@@ -7,10 +7,10 @@ namespace Caesura.Logging
     
     public class SolaceConsoleLoggerProvider : ILoggerProvider
     {
-        private readonly SolaceConsoleLoggerConfiguration _config;
+        private readonly ConsoleLoggerConfiguration _config;
         private readonly ConcurrentDictionary<string, SolaceConsoleLogger> _loggers = new ConcurrentDictionary<string, SolaceConsoleLogger>();
         
-        public SolaceConsoleLoggerProvider(SolaceConsoleLoggerConfiguration config)
+        public SolaceConsoleLoggerProvider(ConsoleLoggerConfiguration config)
         {
             _config = config;
         }

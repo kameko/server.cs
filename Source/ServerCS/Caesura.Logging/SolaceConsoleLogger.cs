@@ -9,12 +9,12 @@ namespace Caesura.Logging
     public class SolaceConsoleLogger : ILogger
     {
         private static object console_lock = new Object();
-        private static SolaceConsoleLoggerConfiguration? static_config;
-        private static SolaceConsoleLoggerConfiguration? replacement_static_config;
+        private static ConsoleLoggerConfiguration? static_config;
+        private static ConsoleLoggerConfiguration? replacement_static_config;
         private static ConcurrentQueue<LogItem> queue;
         
         private readonly string _name;
-        private readonly SolaceConsoleLoggerConfiguration _config;
+        private readonly ConsoleLoggerConfiguration _config;
         
         public EventId Id { get; private set; }
         
@@ -24,7 +24,7 @@ namespace Caesura.Logging
             Task.Run(LogHandler);
         }
         
-        public SolaceConsoleLogger(string name, SolaceConsoleLoggerConfiguration config)
+        public SolaceConsoleLogger(string name, ConsoleLoggerConfiguration config)
         {
             _name   = name;
             _config = config;
@@ -82,7 +82,7 @@ namespace Caesura.Logging
             }
         }
         
-        public static void Reconfigure(SolaceConsoleLoggerConfiguration config)
+        public static void Reconfigure(ConsoleLoggerConfiguration config)
         {
             lock (console_lock)
             {

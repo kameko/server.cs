@@ -6,7 +6,7 @@ namespace Caesura.Logging
     using System.Threading;
     using Microsoft.Extensions.Logging;
     
-    public class SolaceConsoleLoggerConfiguration
+    public class ConsoleLoggerConfiguration
     {
         public LogLevel LogLevel
             { get; set; } = LogLevel.Debug;
@@ -35,12 +35,12 @@ namespace Caesura.Logging
         public ObjectStringifyOption StringifyOption
             { get; set; } = ObjectStringifyOption.SerializeJsonRaw;
         
-        public SolaceConsoleLoggerConfiguration()
+        public ConsoleLoggerConfiguration()
         {
             
         }
         
-        public SolaceConsoleLoggerConfiguration(SolaceConsoleLoggerConfiguration other)
+        public ConsoleLoggerConfiguration(ConsoleLoggerConfiguration other)
         {
             LogLevel                             = other.LogLevel;
             EventId                              = other.EventId;
@@ -54,9 +54,9 @@ namespace Caesura.Logging
             StringifyOption                      = other.StringifyOption;
         }
         
-        public SolaceConsoleLoggerConfiguration Clone()
+        public ConsoleLoggerConfiguration Clone()
         {
-            return new SolaceConsoleLoggerConfiguration(this);
+            return new ConsoleLoggerConfiguration(this);
         }
         
         public enum ObjectStringifyOption
