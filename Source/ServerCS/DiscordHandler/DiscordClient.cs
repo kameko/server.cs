@@ -91,24 +91,19 @@ namespace ServerCS.DiscordHandler
         
         public bool ChannelExists(ulong guild_id, ulong channel_id)
         {
-            if (IsInGuild(guild_id))
-            {
-                return !(client.GetGuild(guild_id).GetChannel(channel_id) is null);
-            }
-            return false;
+            return !(client.GetGuild(guild_id)?.GetChannel(channel_id) is null);
         }
         
         public bool TryGetChannel(ulong guild_id, ulong channel_id, ChannelHandle? handle)
         {
-            if (!ChannelExists(guild_id, channel_id))
+            var channel = client.GetGuild(guild_id)?.GetTextChannel(channel_id);
+            
+            if (channel is null)
             {
                 handle = null;
                 return false;
             }
             
-            var channel = client
-                .GetGuild(guild_id)
-                .GetTextChannel(channel_id);
             handle = new ChannelHandle(client, channel);
             return true;
         }
