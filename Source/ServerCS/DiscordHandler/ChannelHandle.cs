@@ -17,14 +17,15 @@ namespace ServerCS.DiscordHandler
         private DiscordSocketClient client;
         private SocketTextChannel channel;
         
-        public string Name      => channel.Name;
-        public ulong Id         => channel.Id;
-        public string Topic     => channel.Topic;
-        public int MemberCount  => channel.Users.Count;
+        public string Name       => channel.Name;
+        public ulong Id          => channel.Id;
+        public string Topic      => channel.Topic;
+        public int MemberCount   => channel.Users.Count;
+        public bool IsNsfw       => channel.IsNsfw;
+        public string Mention    => channel.Mention;
+        public SocketGuild Guild => channel.Guild;
         
-        public string GuildName     => channel.Guild.Name;
-        public ulong GuildId        => channel.Guild.Id;
-        public int GuildMemberCount => channel.Guild.Users.Count;
+        public IReadOnlyCollection<SocketGuildUser> Users => channel.Users;
         
         internal ChannelHandle(DiscordSocketClient discord_client, SocketTextChannel text_channel)
         {
@@ -57,6 +58,11 @@ namespace ServerCS.DiscordHandler
                     isSpoiler : message.File.Spoiler
                 );
             }
+        }
+        
+        public IDisposable StartTyping(RequestOptions? options = null)
+        {
+            return channel.EnterTypingState(options);
         }
         
         public async IAsyncEnumerable<IMessage> GetMessages(
