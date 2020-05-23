@@ -5,18 +5,20 @@ namespace ServerCS.DiscordHandler
     using System.Collections.Generic;
     using System.Collections.Concurrent;
     using System.Linq;
-    using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using Standard.Logging;
+    using Services;
+    using ConfigurationModels;
     using Discord;
     using Discord.WebSocket;
     
     public class DiscordClient : IDiscordClient
     {
         private IConfiguration config;
+        private DiscordModel discord_config;
         private ILogger log;
         private CancellationTokenSource cts;
         private DiscordSocketClient client;
@@ -42,20 +44,18 @@ namespace ServerCS.DiscordHandler
         
         public DiscordClient(IConfiguration configuration, ILogger<DiscordClient> logger)
         {
-            config = configuration;
-            log    = logger;
-            cts    = new CancellationTokenSource();
+            config         = configuration;
+            discord_config = DiscordModel.FromConfiguration(configuration);
+            log            = logger;
+            cts            = new CancellationTokenSource();
             
             var dsc = new DiscordSocketConfig()
             {
                 ExclusiveBulkDelete = true,
+                LogLevel            = LogSeverity.Critical,
             };
             
             client = new DiscordSocketClient(dsc);
-            
-            client.Log             += OnLog;
-            client.MessageReceived += OnClientReceiveMessage;
-            client.MessageUpdated  += OnClientUpdateMessage;
             
             message_queue         = new ConcurrentQueue<SocketMessage>();
             message_updated_queue = new ConcurrentQueue<(SocketMessage Old, SocketMessage New)>();
@@ -64,11 +64,14 @@ namespace ServerCS.DiscordHandler
             OnMessageReceived = delegate { return Task.CompletedTask; };
             OnMessageUpdated  = delegate { return Task.CompletedTask; };
             
+            SetupEventCallbacks();
+            
             log.InstanceAbreaction();
         }
         
         public async Task Start(string token)
         {
+            cts = new CancellationTokenSource();
             await client.LoginAsync(TokenType.Bot, token);
             await client.StartAsync();
             StartEventLoop();
@@ -76,6 +79,7 @@ namespace ServerCS.DiscordHandler
         
         public async Task Stop()
         {
+            cts.Cancel();
             await client.LogoutAsync();
             await client.StopAsync();
         }
@@ -111,9 +115,12 @@ namespace ServerCS.DiscordHandler
         
         // --- Private Methods --- //
         
+        private bool IsCancelled() =>
+            cts.IsCancellationRequested || LifetimeEventsHostedService.Token.IsCancellationRequested;
+        
         private async Task EventLoop()
         {
-            while (!cts.IsCancellationRequested)
+            while (!IsCancelled())
             {
                 try
                 {
@@ -131,7 +138,11 @@ namespace ServerCS.DiscordHandler
                     }
                     catch (Exception ei)
                     {
-                        log.Critical(ei, $"Exception thrown when handling exception handler handling exception {{ex}}.", e);
+                        log.Critical(
+                            ei,
+                            "Exception thrown when handling exception handler handling exception {ex}.",
+                            e
+                        );
                         kill = true;
                     }
                     
@@ -143,17 +154,48 @@ namespace ServerCS.DiscordHandler
                         }
                         catch (Exception ei)
                         {
-                            log.Error(ei, "Exception thrown attempting to log out of Discord after being requested to shut down "
-                                        + "due to encountering exception {{ex}}", e);
+                            log.Error(
+                                ei,
+                                "Exception thrown when attempting to log out of Discord after being "
+                              + "requested to shut down due to encountering exception {ex}",
+                                e
+                            );
                         }
                         
                         break;
                     }
                 }
             }
+            
+            try
+            {
+                if (LifetimeEventsHostedService.Token.IsCancellationRequested &&
+                    !cts.IsCancellationRequested)
+                {
+                    // System is shutting down but client was no requested to log out,
+                    // so attempt logging out here.
+                    await Stop();
+                }
+            }
+            catch (Exception e)
+            {
+                log.Error(
+                    e, 
+                    "Error when attempting to stop client after "
+                  + "LifetimeEventsHostedService's CancellationToken "
+                  + "was cancelled."
+                );
+            }
         }
         
         private void StartEventLoop() => Task.Run(EventLoop);
+        
+        private void SetupEventCallbacks()
+        {
+            client.Log             += OnLog;
+            client.MessageReceived += OnClientReceiveMessage;
+            client.MessageUpdated  += OnClientUpdateMessage;
+        }
         
         private async Task HandleReceivedMessages()
         {
@@ -167,7 +209,7 @@ namespace ServerCS.DiscordHandler
                 return;
             }
             
-            while (!cts.IsCancellationRequested)
+            while (!IsCancelled())
             {
                 var success = message_queue.TryDequeue(out var message);
                 if (!success)
@@ -186,7 +228,7 @@ namespace ServerCS.DiscordHandler
                 return;
             }
             
-            while (!cts.IsCancellationRequested)
+            while (!IsCancelled())
             {
                 var success = message_updated_queue.TryDequeue(out var update);
                 if (!success)
@@ -207,13 +249,20 @@ namespace ServerCS.DiscordHandler
             return Task.CompletedTask;
         }
         
-        private Task OnClientUpdateMessage(Cacheable<IMessage, ulong> cache, SocketMessage message, ISocketMessageChannel channel)
+        private async Task OnClientUpdateMessage(Cacheable<IMessage, ulong> cache, SocketMessage message, ISocketMessageChannel channel)
         {
-            if (cache.HasValue && cache.Value is SocketMessage sm)
+            try
             {
-                message_updated_queue.Enqueue((Old: sm, New: message));
+                var old_get = await cache.GetOrDownloadAsync();
+                if (old_get is SocketMessage old)
+                {
+                    message_updated_queue.Enqueue((Old: old, New: message));
+                }
             }
-            return Task.CompletedTask;
+            catch (NullReferenceException)
+            {
+                // ignore, this is from cache.GetOrDownloadAsync()
+            }
         }
         
         private Task OnLog(LogMessage msg)
