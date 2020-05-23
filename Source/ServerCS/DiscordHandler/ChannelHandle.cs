@@ -4,7 +4,6 @@ namespace ServerCS.DiscordHandler
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Runtime.CompilerServices;
@@ -24,7 +23,6 @@ namespace ServerCS.DiscordHandler
         public bool IsNsfw       => channel.IsNsfw;
         public string Mention    => channel.Mention;
         public SocketGuild Guild => channel.Guild;
-        
         public IReadOnlyCollection<SocketGuildUser> Users => channel.Users;
         
         internal ChannelHandle(DiscordSocketClient discord_client, SocketTextChannel text_channel)
@@ -33,13 +31,15 @@ namespace ServerCS.DiscordHandler
             channel = text_channel;
         }
         
-        public async Task<RestUserMessage> Send(OutgoingMessage message)
+        public async Task<RestUserMessage> Send(OutgoingMessage message, bool dispose_after = true)
         {
             // if (message.Content.Length > DiscordConfig.MaxMessageSize)
             
+            RestUserMessage rum = null!;
+            
             if (message.File is null)
             {
-                return await channel.SendMessageAsync(
+                rum = await channel.SendMessageAsync(
                     text    : message.Content,
                     isTTS   : message.IsTTS,
                     embed   : message.Embed,
@@ -48,7 +48,7 @@ namespace ServerCS.DiscordHandler
             }
             else
             {
-                return await channel.SendFileAsync(
+                rum = await channel.SendFileAsync(
                     stream    : message.File.Stream,
                     filename  : message.File.FileName,
                     text      : message.Content,
@@ -58,6 +58,14 @@ namespace ServerCS.DiscordHandler
                     isSpoiler : message.File.Spoiler
                 );
             }
+            
+            // TODO: make sure this doesn't cause a problem.
+            if (dispose_after)
+            {
+                await message.DisposeAsync();
+            }
+            
+            return rum;
         }
         
         public IDisposable StartTyping(RequestOptions? options = null)

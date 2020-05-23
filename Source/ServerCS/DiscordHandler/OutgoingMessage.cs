@@ -7,7 +7,7 @@ namespace ServerCS.DiscordHandler
     using System.Threading.Tasks;
     using Discord;
     
-    public class OutgoingMessage
+    public class OutgoingMessage : IDisposable, IAsyncDisposable
     {
         public string Content { get; set; }
         public File? File { get; set; }
@@ -40,5 +40,20 @@ namespace ServerCS.DiscordHandler
             : this(content, null!, null!, null!) { }
         
         public static implicit operator OutgoingMessage (string content) => new OutgoingMessage(content);
+        
+        public void Dispose()
+        {
+            File?.Dispose();
+        }
+        
+        public ValueTask DisposeAsync()
+        {
+            if (File is null)
+            {
+                return new ValueTask(Task.CompletedTask);
+            }
+            
+            return File.DisposeAsync();
+        }
     }
 }

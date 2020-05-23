@@ -7,7 +7,7 @@ namespace ServerCS.DiscordHandler
     using System.Threading.Tasks;
     using System.IO;
     
-    public class File
+    public class File : IDisposable, IAsyncDisposable
     {
         public string FileName { get; set; }
         public Stream Stream { get; set; }
@@ -21,5 +21,30 @@ namespace ServerCS.DiscordHandler
         }
         
         public File(string filename, Stream stream) : this(filename, stream, false) { }
+        
+        public static File FromLocalFile(string path)
+        {
+            var fi       = new FileInfo(path);
+            var filename = fi.Name;
+            var stream   = new FileStream(
+                path       : path,
+                mode       : FileMode.Open,
+                access     : FileAccess.Read,
+                share      : FileShare.Read,
+                bufferSize : 4096,
+                useAsync   : true
+            );
+            return new File(filename, stream);
+        }
+        
+        public void Dispose()
+        {
+            Stream.Dispose();
+        }
+        
+        public ValueTask DisposeAsync()
+        {
+            return Stream.DisposeAsync();
+        }
     }
 }
