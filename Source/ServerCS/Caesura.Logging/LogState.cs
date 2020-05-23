@@ -6,18 +6,18 @@ namespace Caesura.Logging
     using System.Text;
     using System.Text.Json;
     
-    public class SolaceLogState
+    public class LogState
     {
         public string Message { get; set; }
         public List<StateElement> Values { get; set; }
         
-        public SolaceLogState(string message, List<StateElement> values)
+        public LogState(string message, List<StateElement> values)
         {
             Message = message;
             Values  = values;
         }
         
-        public static SolaceLogState Create(string message, object[] args)
+        public static LogState Create(string message, object[] args)
         {
             var elms  = new List<StateElement>(args.Length);
             var count = 0;
@@ -27,7 +27,7 @@ namespace Caesura.Logging
                 elms.Add(elm);
                 count++;
             }
-            var state = new SolaceLogState(message, elms);
+            var state = new LogState(message, elms);
             return state;
         }
         

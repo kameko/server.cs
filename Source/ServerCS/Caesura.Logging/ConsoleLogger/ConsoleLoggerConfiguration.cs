@@ -1,5 +1,5 @@
 
-namespace Caesura.Logging
+namespace Caesura.Logging.ConsoleLogger
 {
     using System;
     using System.Collections.Generic;
@@ -24,8 +24,8 @@ namespace Caesura.Logging
             {
                 { "Microsoft.Hosting.Lifetime", "System" }
             };
-        public Func<ISolaceConsoleLoggerFormatter> FormatterFactory
-            { get; set; } = () => new SolaceConsoleLoggerFormatter();
+        public Func<IConsoleLoggerFormatter> FormatterFactory
+            { get; set; } = () => new ConsoleLoggerFormatter();
         public CancellationToken Token
             { get; set; }
         public IConsoleTheme Theme

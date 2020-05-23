@@ -1,5 +1,5 @@
 
-namespace Caesura.Logging
+namespace Caesura.Logging.ConsoleLogger
 {
     using System;
     using System.Text;
@@ -8,13 +8,13 @@ namespace Caesura.Logging
     
     // Abandon all hope ye who enter here
     
-    public class SolaceConsoleLoggerFormatter : ISolaceConsoleLoggerFormatter
+    public class ConsoleLoggerFormatter : IConsoleLoggerFormatter
     {
         private readonly ConsoleColor original_foreground_color;
         private readonly ConsoleColor original_background_color;
         private readonly List<string> errors;
         
-        public SolaceConsoleLoggerFormatter()
+        public ConsoleLoggerFormatter()
         {
             Console.ResetColor();
             
@@ -192,7 +192,7 @@ namespace Caesura.Logging
             
             void WriteJson(bool indent)
             {
-                if (item.State is SolaceLogState sls)
+                if (item.State is LogState sls)
                 {
                     JsonFormatter(item, sls, indent);
                 }
@@ -203,7 +203,7 @@ namespace Caesura.Logging
             }
         }
         
-        private void JsonFormatter(LogItem item, SolaceLogState state, bool indent)
+        private void JsonFormatter(LogItem item, LogState state, bool indent)
         {
             var original_foreground = Console.ForegroundColor;
             var original_background = Console.BackgroundColor;
@@ -286,7 +286,7 @@ namespace Caesura.Logging
                 WriteLine();
                 Console.ForegroundColor = item.Configuration.Theme.ExceptionMessageColor;
                 Write(
-                    $"{nameof(SolaceConsoleLoggerFormatter)} Error: {e_count} "
+                    $"{nameof(ConsoleLoggerFormatter)} Error: {e_count} "
                   + $"error{(e_count == 1 ? string.Empty : "s")} encountered."
                 );
                 

@@ -1,7 +1,7 @@
 
 namespace Caesura.Logging
 {
-    public interface ISolaceConsoleLoggerFormatter
+    public interface IConsoleLoggerFormatter
     {
         void PreLog(LogItem item);
         void PostLog(LogItem item);

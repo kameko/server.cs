@@ -4,6 +4,7 @@ namespace Caesura.Logging
     using System;
     using System.Runtime.CompilerServices;
     using Microsoft.Extensions.Logging;
+    using ConsoleLogger;
     
     public static class LoggerExtensions
     {
@@ -50,7 +51,7 @@ namespace Caesura.Logging
                 LogLevel = log_level,
             };
             
-            var provider = new SolaceConsoleLoggerProvider(config);
+            var provider = new ConsoleLoggerProvider(config);
             builder.AddProvider(provider);
             
             return builder;
@@ -61,7 +62,7 @@ namespace Caesura.Logging
             var config = new ConsoleLoggerConfiguration();
             configure?.Invoke(config);
             
-            var provider = new SolaceConsoleLoggerProvider(config);
+            var provider = new ConsoleLoggerProvider(config);
             builder.AddProvider(provider);
             
             return builder;
@@ -134,12 +135,12 @@ namespace Caesura.Logging
         
         private static void RawLog(LogLevel level, ILogger logger, Exception? exception, string message, params object[] args)
         {
-            logger.Log<SolaceLogState>(level, GetId(logger), SolaceLogState.Create(message, args), exception, Formatter);
+            logger.Log<LogState>(level, GetId(logger), LogState.Create(message, args), exception, Formatter);
         }
         
         private static EventId GetId(ILogger logger)
         {
-            if (logger is SolaceConsoleLogger csl)
+            if (logger is ConsoleLogger.ConsoleLogger csl)
             {
                 return csl.Id;
             }
@@ -149,7 +150,7 @@ namespace Caesura.Logging
             }
         }
         
-        private static string Formatter(SolaceLogState? state, Exception? exception)
+        private static string Formatter(LogState? state, Exception? exception)
         {
             var str = state?.ToJson(indent: false, ignore_null: false) ?? string.Empty;
             if (!string.IsNullOrEmpty(str) && !(exception is null))

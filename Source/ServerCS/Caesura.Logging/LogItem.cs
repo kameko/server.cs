@@ -5,9 +5,11 @@ namespace Caesura.Logging
     using System.Collections.Generic;
     using System.Linq;
     using Microsoft.Extensions.Logging;
+    using ConsoleLogger;
     
     public class LogItem
     {
+        // FIXME: we need a config hiarchey, don't use the console logger config.
         public ConsoleLoggerConfiguration Configuration { get; set; }
         public DateTime TimeStamp { get; set; }
         public LogLevel Level { get; set; }
@@ -31,7 +33,7 @@ namespace Caesura.Logging
         {
             var statemsg = string.Empty;
             IEnumerable<LogElement.ItemElement> elms;
-            if (State is SolaceLogState sls)
+            if (State is LogState sls)
             {
                 statemsg = sls.Message;
                 elms = sls.Values.Select(x => 

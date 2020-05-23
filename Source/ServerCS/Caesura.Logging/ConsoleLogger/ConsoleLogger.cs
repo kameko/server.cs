@@ -1,12 +1,12 @@
 
-namespace Caesura.Logging
+namespace Caesura.Logging.ConsoleLogger
 {
     using System;
     using System.Collections.Concurrent;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
     
-    public class SolaceConsoleLogger : ILogger
+    public class ConsoleLogger : ILogger
     {
         private static object console_lock = new Object();
         private static ConsoleLoggerConfiguration? static_config;
@@ -18,13 +18,13 @@ namespace Caesura.Logging
         
         public EventId Id { get; private set; }
         
-        static SolaceConsoleLogger()
+        static ConsoleLogger()
         {
             queue = new ConcurrentQueue<LogItem>();
             Task.Run(LogHandler);
         }
         
-        public SolaceConsoleLogger(string name, ConsoleLoggerConfiguration config)
+        public ConsoleLogger(string name, ConsoleLoggerConfiguration config)
         {
             _name   = name;
             _config = config;
@@ -139,7 +139,7 @@ namespace Caesura.Logging
                                 config,
                                 LogLevel.Warning,
                                 0,
-                                nameof(SolaceConsoleLogger),
+                                nameof(ConsoleLogger),
                                 "WARNING! LOG BUFFER IS OVERLOADED!",
                                 null
                             );

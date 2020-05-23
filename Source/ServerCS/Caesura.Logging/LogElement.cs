@@ -5,7 +5,7 @@ namespace Caesura.Logging
     using System.Collections.Generic;
     using Microsoft.Extensions.Logging;
     
-    public class LogElement : IHasId<ulong>
+    public class LogElement
     {
         public ulong Id                          { get; set; }
         
@@ -36,7 +36,7 @@ namespace Caesura.Logging
                 $"{(Exception is null ? string.Empty : Environment.NewLine)}{Exception}";
         }
         
-        public class ItemElement : IHasId<ulong>
+        public class ItemElement
         {
             public ulong Id     { get; set; }
             public int Position { get; set; }
@@ -48,7 +48,7 @@ namespace Caesura.Logging
             }
         }
         
-        public class ResourceSnapshot : IHasId<ulong>
+        public class ResourceSnapshot
         {
             public ulong Id              { get; set; }
             public int RamMbUse          { get; set; }
@@ -70,7 +70,7 @@ namespace Caesura.Logging
             }
         }
         
-        public class ExceptionElement : IHasId<ulong>
+        public class ExceptionElement
         {
             public ulong Id       { get; set; }
             public string Name    { get; set; } = string.Empty;

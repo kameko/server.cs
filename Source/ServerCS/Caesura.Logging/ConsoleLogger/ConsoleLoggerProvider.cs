@@ -1,23 +1,23 @@
 
-namespace Caesura.Logging
+namespace Caesura.Logging.ConsoleLogger
 {
     using System;
     using System.Collections.Concurrent;
     using Microsoft.Extensions.Logging;
     
-    public class SolaceConsoleLoggerProvider : ILoggerProvider
+    public class ConsoleLoggerProvider : ILoggerProvider
     {
         private readonly ConsoleLoggerConfiguration _config;
-        private readonly ConcurrentDictionary<string, SolaceConsoleLogger> _loggers = new ConcurrentDictionary<string, SolaceConsoleLogger>();
+        private readonly ConcurrentDictionary<string, ConsoleLogger> _loggers = new ConcurrentDictionary<string, ConsoleLogger>();
         
-        public SolaceConsoleLoggerProvider(ConsoleLoggerConfiguration config)
+        public ConsoleLoggerProvider(ConsoleLoggerConfiguration config)
         {
             _config = config;
         }
         
         public ILogger CreateLogger(string categoryName)
         {
-            return _loggers.GetOrAdd(categoryName, name => new SolaceConsoleLogger(name, _config));
+            return _loggers.GetOrAdd(categoryName, name => new ConsoleLogger(name, _config));
         }
         
         public void Dispose()
