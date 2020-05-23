@@ -12,5 +12,9 @@
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Standard.Logging\Standard.Logging.csproj" />
+  </ItemGroup>
+
 
 </Project>

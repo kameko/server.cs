@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerCS", "Source\ServerCS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerCS.Tests", "Source\ServerCS.Tests\ServerCS.Tests.csproj", "{3127DF9F-A25D-48E6-A0E1-1DC812A1D5AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Standard.Logging", "Source\Standard.Logging\Standard.Logging.csproj", "{BF52A7E5-B293-4635-B2C2-7DBA1C021598}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,9 +48,22 @@ Global
 		{3127DF9F-A25D-48E6-A0E1-1DC812A1D5AE}.Release|x64.Build.0 = Release|Any CPU
 		{3127DF9F-A25D-48E6-A0E1-1DC812A1D5AE}.Release|x86.ActiveCfg = Release|Any CPU
 		{3127DF9F-A25D-48E6-A0E1-1DC812A1D5AE}.Release|x86.Build.0 = Release|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Debug|x64.Build.0 = Debug|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Debug|x86.Build.0 = Debug|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Release|x64.ActiveCfg = Release|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Release|x64.Build.0 = Release|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Release|x86.ActiveCfg = Release|Any CPU
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D750E6DF-B720-4963-9749-F7117BEB930E} = {989F6D69-5E33-4AD6-8E2E-FD08A6B12279}
 		{3127DF9F-A25D-48E6-A0E1-1DC812A1D5AE} = {989F6D69-5E33-4AD6-8E2E-FD08A6B12279}
+		{BF52A7E5-B293-4635-B2C2-7DBA1C021598} = {989F6D69-5E33-4AD6-8E2E-FD08A6B12279}
 	EndGlobalSection
 EndGlobal
