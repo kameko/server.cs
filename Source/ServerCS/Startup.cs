@@ -13,7 +13,7 @@ namespace ServerCS
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
-    using Caesura.Logging;
+    using Standard.Logging;
     using Services;
     using DiscordHandler;
     

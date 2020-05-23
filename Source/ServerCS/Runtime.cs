@@ -9,7 +9,7 @@ namespace ServerCS
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
-    using Caesura.Logging;
+    using Standard.Logging;
     using ConfigurationModels;
     using Services;
     using DiscordHandler;

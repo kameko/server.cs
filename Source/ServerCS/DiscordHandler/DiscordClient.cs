@@ -10,7 +10,7 @@ namespace ServerCS.DiscordHandler
     using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
-    using Caesura.Logging;
+    using Standard.Logging;
     using Discord;
     using Discord.WebSocket;
     

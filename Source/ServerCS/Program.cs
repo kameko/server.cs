@@ -9,7 +9,7 @@ namespace ServerCS
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
-    using Caesura.Logging;
+    using Standard.Logging;
     using Services;
     
     public class Program
@@ -27,6 +27,8 @@ namespace ServerCS
                         .ClearProviders()
                         .AddCaesuraConsoleLogger(config =>
                         {
+                            // TODO: remove console logger later, replace with
+                            // web API endpoint for an external client.
                             config.Token = LifetimeEventsHostedService.Token;
                             config.LogLevel  = LogLevel.Trace;
                             config.TrimNames = new List<string>()
