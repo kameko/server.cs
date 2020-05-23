@@ -6,8 +6,10 @@ namespace Caesura.Logging.ConsoleLogger
     using System.Threading;
     using Microsoft.Extensions.Logging;
     
-    public class ConsoleLoggerConfiguration
+    public class ConsoleLoggerConfiguration : ILoggerConfiguration
     {
+        public static readonly ConsoleLoggerConfiguration Default = new ConsoleLoggerConfiguration();
+        
         public LogLevel LogLevel
             { get; set; } = LogLevel.Debug;
         public int EventId

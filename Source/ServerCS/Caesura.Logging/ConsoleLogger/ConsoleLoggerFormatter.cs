@@ -91,37 +91,40 @@ namespace Caesura.Logging.ConsoleLogger
             var original_foreground = Console.ForegroundColor;
             var original_background = Console.BackgroundColor;
             
+            var config = (item.Configuration as ConsoleLoggerConfiguration)
+                ?? ConsoleLoggerConfiguration.Default;
+            
             var level_color = item.Level switch
             {
-                LogLevel.Information => item.Configuration.Theme.InfoColor,
-                LogLevel.Warning     => item.Configuration.Theme.WarnColor,
-                LogLevel.Error       => item.Configuration.Theme.ErrorColor,
-                LogLevel.Critical    => item.Configuration.Theme.CriticalColor,
-                LogLevel.Debug       => item.Configuration.Theme.DebugColor,
-                LogLevel.Trace       => item.Configuration.Theme.TraceColor,
+                LogLevel.Information => config.Theme.InfoColor,
+                LogLevel.Warning     => config.Theme.WarnColor,
+                LogLevel.Error       => config.Theme.ErrorColor,
+                LogLevel.Critical    => config.Theme.CriticalColor,
+                LogLevel.Debug       => config.Theme.DebugColor,
+                LogLevel.Trace       => config.Theme.TraceColor,
                 LogLevel.None        => ConsoleColor.Gray,
                 
                 _ => ConsoleColor.Gray
             };
             
-            Console.ForegroundColor = item.Configuration.Theme.BracketColor;
+            Console.ForegroundColor = config.Theme.BracketColor;
             Write("[");
             Console.ForegroundColor = level_color;
             Write(item.Level);
-            Console.ForegroundColor = item.Configuration.Theme.BracketColor;
+            Console.ForegroundColor = config.Theme.BracketColor;
             Write("]");
             Console.ForegroundColor = original_foreground;
             
-            Console.ForegroundColor = item.Configuration.Theme.BracketColor;
+            Console.ForegroundColor = config.Theme.BracketColor;
             Write("[");
-            Console.ForegroundColor = item.Configuration.Theme.TimeStampColor;
-            Write(item.TimeStamp.ToString(item.Configuration.TimeStampFormat));
-            Console.ForegroundColor = item.Configuration.Theme.BracketColor;
+            Console.ForegroundColor = config.Theme.TimeStampColor;
+            Write(item.TimeStamp.ToString(config.TimeStampFormat));
+            Console.ForegroundColor = config.Theme.BracketColor;
             Write("]");
             Console.ForegroundColor = original_foreground;
             
             var name = item.Name;
-            foreach (var trim in item.Configuration.TrimNames)
+            foreach (var trim in config.TrimNames)
             {
                 if (name.StartsWith(trim))
                 {
@@ -129,7 +132,7 @@ namespace Caesura.Logging.ConsoleLogger
                     break;
                 }
             }
-            foreach (var (val, repl) in item.Configuration.ReplaceNames)
+            foreach (var (val, repl) in config.ReplaceNames)
             {
                 if (name == val)
                 {
@@ -140,9 +143,9 @@ namespace Caesura.Logging.ConsoleLogger
             
             if (!string.IsNullOrEmpty(name))
             {
-                Console.ForegroundColor = item.Configuration.Theme.BracketColor;
+                Console.ForegroundColor = config.Theme.BracketColor;
                 Write("[");
-                Console.ForegroundColor = item.Configuration.Theme.NameColor;
+                Console.ForegroundColor = config.Theme.NameColor;
                 Write(name);
                 if (item.Id != 0)
                 {
@@ -150,7 +153,7 @@ namespace Caesura.Logging.ConsoleLogger
                     Write(item.Id);
                     Write(")");
                 }
-                Console.ForegroundColor = item.Configuration.Theme.BracketColor;
+                Console.ForegroundColor = config.Theme.BracketColor;
                 Write("]");
                 Console.ForegroundColor = original_foreground;
             }
@@ -163,15 +166,18 @@ namespace Caesura.Logging.ConsoleLogger
             var original_foreground = Console.ForegroundColor;
             var original_background = Console.BackgroundColor;
             
-            if (item.Configuration.StringifyOption == ConsoleLoggerConfiguration.ObjectStringifyOption.CallToString)
+            var config = (item.Configuration as ConsoleLoggerConfiguration)
+                ?? ConsoleLoggerConfiguration.Default;
+            
+            if (config.StringifyOption == ConsoleLoggerConfiguration.ObjectStringifyOption.CallToString)
             {
                 WriteState();
             }
-            else if (item.Configuration.StringifyOption == ConsoleLoggerConfiguration.ObjectStringifyOption.SerializeJsonPretty)
+            else if (config.StringifyOption == ConsoleLoggerConfiguration.ObjectStringifyOption.SerializeJsonPretty)
             {
                 WriteJson(indent: true);
             }
-            else if (item.Configuration.StringifyOption == ConsoleLoggerConfiguration.ObjectStringifyOption.SerializeJsonRaw)
+            else if (config.StringifyOption == ConsoleLoggerConfiguration.ObjectStringifyOption.SerializeJsonRaw)
             {
                 WriteJson(indent: false);
             }
@@ -179,13 +185,13 @@ namespace Caesura.Logging.ConsoleLogger
             {
                 errors.Add(
                     $"Unrecognized {nameof(ConsoleLoggerConfiguration.ObjectStringifyOption)} "
-                  + $"option: {item.Configuration.StringifyOption}."
+                  + $"option: {config.StringifyOption}."
                 );
             }
             
             void WriteState()
             {
-                Console.ForegroundColor = item.Configuration.Theme.MessageColor;
+                Console.ForegroundColor = config.Theme.MessageColor;
                 Write(item.State?.ToString() ?? string.Empty);
                 Console.ForegroundColor = original_foreground;
             }
@@ -208,6 +214,9 @@ namespace Caesura.Logging.ConsoleLogger
             var original_foreground = Console.ForegroundColor;
             var original_background = Console.BackgroundColor;
             
+            var config = (item.Configuration as ConsoleLoggerConfiguration)
+                ?? ConsoleLoggerConfiguration.Default;
+            
             var json = state.ToJson(indent, ignore_null: true, json_tag: true);
             
             var splits = json.Split("<JSON>");
@@ -216,7 +225,7 @@ namespace Caesura.Logging.ConsoleLogger
                 if (str.StartsWith("<$JSON>"))
                 {
                     var xsplits = str.Replace("<$JSON>", string.Empty).Split("</JSON>");
-                    Console.ForegroundColor = item.Configuration.Theme.JsonColor;
+                    Console.ForegroundColor = config.Theme.JsonColor;
                     var xjson = xsplits[0];
                     if (xjson.StartsWith("\"") && xjson.EndsWith("\""))
                     {
@@ -226,14 +235,14 @@ namespace Caesura.Logging.ConsoleLogger
                     Console.ForegroundColor = original_foreground;
                     if (xsplits.Length > 1)
                     {
-                        Console.ForegroundColor = item.Configuration.Theme.MessageColor;
+                        Console.ForegroundColor = config.Theme.MessageColor;
                         Write(xsplits[1]);
                         Console.ForegroundColor = original_foreground;
                     }
                 }
                 else
                 {
-                    Console.ForegroundColor = item.Configuration.Theme.MessageColor;
+                    Console.ForegroundColor = config.Theme.MessageColor;
                     Write(str);
                     Console.ForegroundColor = original_foreground;
                 }
@@ -247,27 +256,30 @@ namespace Caesura.Logging.ConsoleLogger
             var original_foreground = Console.ForegroundColor;
             var original_background = Console.BackgroundColor;
             
-            Console.ForegroundColor = item.Configuration.Theme.ExceptionWarningColor;
+            var config = (item.Configuration as ConsoleLoggerConfiguration)
+                ?? ConsoleLoggerConfiguration.Default;
+            
+            Console.ForegroundColor = config.Theme.ExceptionWarningColor;
             Write("EXCEPTION: ");
-            Console.ForegroundColor = item.Configuration.Theme.ExceptionNameColor;
+            Console.ForegroundColor = config.Theme.ExceptionNameColor;
             Write(exception.GetType().FullName ?? "<NO TYPE NAME>");
             WriteLine();
             
             if (!string.IsNullOrEmpty(exception.Message))
             {
-                Console.ForegroundColor = item.Configuration.Theme.ExceptionMetaColor;
+                Console.ForegroundColor = config.Theme.ExceptionMetaColor;
                 Write("MESSAGE: ");
-                Console.ForegroundColor = item.Configuration.Theme.ExceptionMessageColor;
+                Console.ForegroundColor = config.Theme.ExceptionMessageColor;
                 Write(exception.Message);
                 WriteLine();
             }
             
-            Console.ForegroundColor = item.Configuration.Theme.ExceptionMetaColor;
+            Console.ForegroundColor = config.Theme.ExceptionMetaColor;
             Write(" Stack Trace: ");
             WriteLine();
-            Console.ForegroundColor = item.Configuration.Theme.ExceptionStackTraceColor;
+            Console.ForegroundColor = config.Theme.ExceptionStackTraceColor;
             Write(exception.StackTrace ?? " <NO STACK TRACE>");
-            Console.ForegroundColor = item.Configuration.Theme.ExceptionMetaColor;
+            Console.ForegroundColor = config.Theme.ExceptionMetaColor;
             WriteLine();
             Write(" --- End of stack trace ---");
             
@@ -281,10 +293,13 @@ namespace Caesura.Logging.ConsoleLogger
                 var original_foreground = Console.ForegroundColor;
                 var original_background = Console.BackgroundColor;
                 
+                var config = (item.Configuration as ConsoleLoggerConfiguration)
+                ?? ConsoleLoggerConfiguration.Default;
+                
                 var e_count = errors.Count;
                 
                 WriteLine();
-                Console.ForegroundColor = item.Configuration.Theme.ExceptionMessageColor;
+                Console.ForegroundColor = config.Theme.ExceptionMessageColor;
                 Write(
                     $"{nameof(ConsoleLoggerFormatter)} Error: {e_count} "
                   + $"error{(e_count == 1 ? string.Empty : "s")} encountered."

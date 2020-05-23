@@ -9,8 +9,7 @@ namespace Caesura.Logging
     
     public class LogItem
     {
-        // FIXME: we need a config hiarchey, don't use the console logger config.
-        public ConsoleLoggerConfiguration Configuration { get; set; }
+        public ILoggerConfiguration Configuration { get; set; }
         public DateTime TimeStamp { get; set; }
         public LogLevel Level { get; set; }
         public EventId Id { get; set; }
@@ -18,7 +17,7 @@ namespace Caesura.Logging
         public object? State { get; set; }
         public Exception? Exception { get; set; }
         
-        public LogItem(ConsoleLoggerConfiguration config, LogLevel logLevel, EventId eventId, string name, object? state, Exception? exception)
+        public LogItem(ILoggerConfiguration config, LogLevel logLevel, EventId eventId, string name, object? state, Exception? exception)
         {
             TimeStamp     = DateTime.UtcNow;
             Configuration = config;
