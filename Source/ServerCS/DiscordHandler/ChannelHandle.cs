@@ -61,15 +61,22 @@ namespace ServerCS.DiscordHandler
         
         public async IAsyncEnumerable<IMessage> GetMessages(
             [EnumeratorCancellation] CancellationToken token,
-            int delay = 1_000,
-            int limit = 100,
-            RequestOptions? options = null
+            FetchMessagesOptions? options = null
         )
         {
-            var messages = await channel.GetMessagesAsync(
-                limit   : limit,
-                options : options
-            ).FlattenAsync();
+            options ??= FetchMessagesOptions.Default;
+            
+            var messages = options.FromMessageId > 0
+                ? await channel.GetMessagesAsync(
+                        fromMessageId : options.FromMessageId,
+                        dir           : options.Direction,
+                        limit         : options.Limit,
+                        options       : options.RequestOptions
+                    ).FlattenAsync()
+                : await channel.GetMessagesAsync(
+                        limit   : options.Limit,
+                        options : options.RequestOptions
+                    ).FlattenAsync();
             
             while (messages.Count() > 0 && !token.IsCancellationRequested)
             {
@@ -92,7 +99,7 @@ namespace ServerCS.DiscordHandler
                 
                 try
                 {
-                    await Task.Delay(delay);
+                    await Task.Delay(options.Delay);
                 }
                 catch (TaskCanceledException)
                 {
@@ -100,10 +107,10 @@ namespace ServerCS.DiscordHandler
                 }
                 
                 messages = await channel.GetMessagesAsync(
-                    fromMessageId : last.Id,
-                    dir           : Direction.Before,
-                    limit         : limit,
-                    options       : options
+                    fromMessageId : options.FromMessageId,
+                    dir           : options.Direction,
+                    limit         : options.Limit,
+                    options       : options.RequestOptions
                 ).FlattenAsync();
                 
                 // TODO: we probably don't need this, but check if we do anyway.
@@ -112,6 +119,17 @@ namespace ServerCS.DiscordHandler
                     yield break;
                 }
             }
+        }
+        
+        public class FetchMessagesOptions
+        {
+            public static readonly FetchMessagesOptions Default = new FetchMessagesOptions();
+            
+            public int Delay { get; set; } = 100;
+            public int Limit { get; set; } = 1_000;
+            public ulong FromMessageId { get; set; } = 0;
+            public Direction Direction { get; set; } = Direction.Around;
+            public RequestOptions? RequestOptions { get; set; }
         }
     }
 }
