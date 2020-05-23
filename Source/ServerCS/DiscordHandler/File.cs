@@ -37,6 +37,13 @@ namespace ServerCS.DiscordHandler
             return new File(filename, stream);
         }
         
+        public static File FromNetwork(string uri)
+        {
+            // https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.socket 
+            // https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.networkstream 
+            throw new NotImplementedException();
+        }
+        
         public void Dispose()
         {
             Stream.Dispose();
