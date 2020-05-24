@@ -54,6 +54,8 @@ namespace ServerCS.DiscordHandler
             cts            = new CancellationTokenSource();
             commands       = command_subsystem;
             
+            commands.SetClient(this);
+            
             var dsc = new DiscordSocketConfig()
             {
                 ExclusiveBulkDelete = true,
