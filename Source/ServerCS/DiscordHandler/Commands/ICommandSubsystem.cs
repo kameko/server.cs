@@ -9,6 +9,10 @@ namespace ServerCS.DiscordHandler.Commands
     
     public interface ICommandSubsystem : IDisposable
     {
+        /// <summary>
+        /// This is set externally by the DiscordClient after it has finished initializing.
+        /// Do not call this inside of any constructor, only in callbacks.
+        /// </summary>
         DiscordClient Client { get; }
         CommandRegistry Registry { get; }
         DiscordModel DiscordConfiguration { get; }

@@ -12,7 +12,9 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
     using Jint.Runtime;
     using ConfigurationModels;
     
-    // TODO: get javascript command paths (multiple) from config
+    // TODO: get javascript command paths (multiple) from config.
+    // DirectoryInfo.GetFiles returns FileInfo[].
+    // Make sure to check for the .js extension.
     
     public class JavaScriptCommand : Commands.CompleteCommandHandler
     {
@@ -41,11 +43,31 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
         
         private class JsScriptContainer
         {
+            public FileInfo FileSource { get; set; }
             public Engine JsEngine { get; set; }
             
-            public JsScriptContainer()
+            public JsScriptContainer(FileInfo file)
             {
-                JsEngine = new Engine();
+                FileSource = file;
+                JsEngine   = new Engine(options =>
+                {
+                    // https://github.com/sebastienros/jint/blob/dev/Jint/Options.cs 
+                    
+                    /*
+                    Hardcode:
+                    public Options AddObjectConverter(IObjectConverter objectConverter);
+                    public Options Constraint(IConstraint constraint);
+                    public Options CatchClrExceptions(Predicate<Exception> handler);
+                    
+                    Use sane default:
+                    public Options RegexTimeoutInterval(TimeSpan regexTimeoutInterval);
+                    public Options Culture(CultureInfo cultureInfo);
+                    */
+                    
+                    // CONSIDER: public Options SetWrapObjectHandler(Func<Engine, object, ObjectInstance> wrapObjectHandler);
+                    // CONSIDER: public Options SetReferencesResolver(IReferenceResolver resolver);
+                    // NOTICE: JavaScriptModel.Debug is for AllowDebuggerStatement, not DebugMode (which is always true).
+                });
             }
         }
     }
