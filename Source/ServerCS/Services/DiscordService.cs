@@ -31,6 +31,7 @@ namespace ServerCS.Services
         
         public async Task StartAsync(CancellationToken token)
         {
+            // TODO: a way to both log in invisible as well as just not logging in at all.
             var discord_token = await File.ReadAllTextAsync(discord.DiscordConfiguration.TokenFilePath, token);
             discord_token = discord_token.Trim();
             await discord.Start(discord_token);

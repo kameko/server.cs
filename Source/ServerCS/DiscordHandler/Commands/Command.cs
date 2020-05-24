@@ -5,12 +5,12 @@ namespace ServerCS.DiscordHandler.Commands
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Standard.Logging;
     using Discord;
     using Discord.WebSocket;
-    using Standard.Logging;
     
-    public abstract class BaseCommand
+    public abstract class Command : IDisposable
     {
-        
+        public virtual void Dispose() { /* pass */ }
     }
 }

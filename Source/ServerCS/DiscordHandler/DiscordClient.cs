@@ -79,12 +79,14 @@ namespace ServerCS.DiscordHandler
             cts = new CancellationTokenSource();
             await client.LoginAsync(TokenType.Bot, token);
             await client.StartAsync();
+            await commands.Start();
             StartEventLoop();
         }
         
         public async Task Stop()
         {
             cts.Cancel();
+            await commands.Stop();
             await client.LogoutAsync();
             await client.StopAsync();
         }
@@ -115,6 +117,7 @@ namespace ServerCS.DiscordHandler
         
         public void Dispose()
         {
+            commands.Dispose();
             client.Dispose();
         }
         
@@ -122,6 +125,8 @@ namespace ServerCS.DiscordHandler
         
         private bool IsCancelled() =>
             cts.IsCancellationRequested || LifetimeEventsHostedService.Token.IsCancellationRequested;
+        
+        private void StartEventLoop() => Task.Run(EventLoop);
         
         private async Task EventLoop()
         {
@@ -199,22 +204,7 @@ namespace ServerCS.DiscordHandler
             }
         }
         
-        private void StartEventLoop() => Task.Run(EventLoop);
-        
-        private void SetupEventCallbacks()
-        {
-            client.Log             += OnLog;
-            client.Ready           += HandleOnReady;
-            client.MessageReceived += OnClientReceiveMessage;
-            client.MessageUpdated  += OnClientUpdateMessage;
-        }
-        
-        private Task HandleOnReady()
-        {
-            var user = client.CurrentUser;
-            log.Information($"Logged into Discord as {user.Username}.");
-            return Task.CompletedTask;
-        }
+        // --- Callback Buffer Handlers --- //
         
         private async Task HandleReceivedMessages()
         {
@@ -237,6 +227,7 @@ namespace ServerCS.DiscordHandler
                 }
                 
                 await OnMessageReceived.Invoke(message!);
+                await commands.ProcessMessageReceived(message!);
             }
         }
         
@@ -256,7 +247,25 @@ namespace ServerCS.DiscordHandler
                 }
                 
                 await OnMessageUpdated.Invoke(update.Old, update.New);
+                await commands.ProcessMessageUpdated(update.Old, update.New);
             }
+        }
+        
+        // --- Discord Client Event Callbacks --- //
+        
+        private void SetupEventCallbacks()
+        {
+            client.Log             += OnLog;
+            client.Ready           += HandleOnReady;
+            client.MessageReceived += OnClientReceiveMessage;
+            client.MessageUpdated  += OnClientUpdateMessage;
+        }
+        
+        private async Task HandleOnReady()
+        {
+            var user = client.CurrentUser;
+            log.Information($"Logged into Discord as {user.Username}.");
+            await commands.ProcessOnClientReady();
         }
         
         private Task OnClientReceiveMessage(SocketMessage message)
