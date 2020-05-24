@@ -11,6 +11,7 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
     using Jint;
     using Jint.Runtime;
     using ConfigurationModels;
+    using Services.JavaScriptHost;
     
     // TODO: get javascript command paths (multiple) from config.
     // DirectoryInfo.GetFiles returns FileInfo[].
@@ -18,12 +19,12 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
     
     public class JavaScriptCommand : Commands.CompleteCommandHandler
     {
-        private List<JsScriptContainer> scripts;
+        private List<JsEngineContainer> scripts;
         
         public JavaScriptCommand(ILogger logger, CommandSubsystem commands)
             : base(nameof(JavaScriptCommand), logger, commands)
         {
-            scripts = new List<JsScriptContainer>();
+            scripts = new List<JsEngineContainer>();
         }
         
         public override Task<Result> ProcessClientReady()
@@ -39,36 +40,6 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
         public override Task<Result> ProcessUpdatedMessage(SocketMessage old_message, SocketMessage new_message)
         {
             throw new NotImplementedException();
-        }
-        
-        private class JsScriptContainer
-        {
-            public FileInfo FileSource { get; set; }
-            public Engine JsEngine { get; set; }
-            
-            public JsScriptContainer(FileInfo file)
-            {
-                FileSource = file;
-                JsEngine   = new Engine(options =>
-                {
-                    // https://github.com/sebastienros/jint/blob/dev/Jint/Options.cs 
-                    
-                    /*
-                    Hardcode:
-                    public Options AddObjectConverter(IObjectConverter objectConverter);
-                    public Options Constraint(IConstraint constraint);
-                    public Options CatchClrExceptions(Predicate<Exception> handler);
-                    
-                    Use sane default:
-                    public Options RegexTimeoutInterval(TimeSpan regexTimeoutInterval);
-                    public Options Culture(CultureInfo cultureInfo);
-                    */
-                    
-                    // CONSIDER: public Options SetWrapObjectHandler(Func<Engine, object, ObjectInstance> wrapObjectHandler);
-                    // CONSIDER: public Options SetReferencesResolver(IReferenceResolver resolver);
-                    // NOTICE: JavaScriptModel.Debug is for AllowDebuggerStatement, not DebugMode (which is always true).
-                });
-            }
         }
     }
 }

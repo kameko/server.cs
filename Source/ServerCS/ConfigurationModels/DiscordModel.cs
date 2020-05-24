@@ -12,7 +12,7 @@ namespace ServerCS.ConfigurationModels
         public static string ConfigurationKey { get; set; } = "Discord";
         
         public string TokenFilePath { get; set; } = string.Empty;
-        public IDictionary<string, JavaScriptModel> JavaScriptOptions { get; set; } = new Dictionary<string, JavaScriptModel>();
+        public IDictionary<string, JavaScriptModel> JavaScriptHostOptions { get; set; } = new Dictionary<string, JavaScriptModel>();
         
         public static DiscordModel FromConfiguration(IConfiguration configuration)
         {
