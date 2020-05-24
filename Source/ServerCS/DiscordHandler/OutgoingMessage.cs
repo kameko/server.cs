@@ -10,12 +10,12 @@ namespace ServerCS.DiscordHandler
     public class OutgoingMessage : IDisposable, IAsyncDisposable
     {
         public string Content { get; set; }
-        public File? File { get; set; }
+        public DiscordFile? File { get; set; }
         public Embed? Embed { get; set; }
         public RequestOptions? RequestOptions { get; set; }
         public bool IsTTS { get; set; }
         
-        public OutgoingMessage(string content, File file, Embed embed, RequestOptions request_options)
+        public OutgoingMessage(string content, DiscordFile file, Embed embed, RequestOptions request_options)
         {
             Content        = content;
             File           = file;
@@ -24,11 +24,11 @@ namespace ServerCS.DiscordHandler
             IsTTS          = false;
         }
         
-        public OutgoingMessage(string content, File file, Embed embed)
+        public OutgoingMessage(string content, DiscordFile file, Embed embed)
             : this(content, file, embed, null!) { }
-        public OutgoingMessage(string content, File file, RequestOptions request_options)
+        public OutgoingMessage(string content, DiscordFile file, RequestOptions request_options)
             : this(content, file, null!, request_options) { }
-        public OutgoingMessage(string content, File file)
+        public OutgoingMessage(string content, DiscordFile file)
             : this(content, file, null!, null!) { }
         public OutgoingMessage(string content, Embed embed, RequestOptions request_options)
             : this(content, null!, embed, request_options) { }

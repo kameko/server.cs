@@ -14,6 +14,7 @@ namespace ServerCS.DiscordHandler
     using ConfigurationModels;
     using Discord;
     using Discord.WebSocket;
+    using Commands;
     
     public class DiscordClient : IDiscordClient
     {
@@ -22,9 +23,12 @@ namespace ServerCS.DiscordHandler
         private ILogger log;
         private CancellationTokenSource cts;
         private DiscordSocketClient client;
+        private ICommandSubsystem commands;
         
         private ConcurrentQueue<SocketMessage> message_queue;
         private ConcurrentQueue<(SocketMessage Old, SocketMessage New)> message_updated_queue;
+        
+        public DiscordModel DiscordConfiguration => discord_config;
         
         /// <summary>
         /// Invoked when the client encountered an internal error, usually due to a callback
@@ -42,12 +46,13 @@ namespace ServerCS.DiscordHandler
         /// </summary>
         public event Func<SocketMessage, SocketMessage, Task> OnMessageUpdated;
         
-        public DiscordClient(IConfiguration configuration, ILogger<DiscordClient> logger)
+        public DiscordClient(IConfiguration configuration, ILogger<DiscordClient> logger, ICommandSubsystem command_subsystem)
         {
             config         = configuration;
             discord_config = DiscordModel.FromConfiguration(configuration);
             log            = logger;
             cts            = new CancellationTokenSource();
+            commands       = command_subsystem;
             
             var dsc = new DiscordSocketConfig()
             {
@@ -108,6 +113,11 @@ namespace ServerCS.DiscordHandler
             return true;
         }
         
+        public void Dispose()
+        {
+            client.Dispose();
+        }
+        
         // --- Private Methods --- //
         
         private bool IsCancelled() =>
@@ -143,6 +153,12 @@ namespace ServerCS.DiscordHandler
                     
                     if (kill)
                     {
+                        log.Warning(
+                            e,
+                            "Exception encountered in main event loop. Exception handler "
+                          + "has requested shutdown of client."
+                        );
+                        
                         try
                         {
                             await Stop();
@@ -188,8 +204,16 @@ namespace ServerCS.DiscordHandler
         private void SetupEventCallbacks()
         {
             client.Log             += OnLog;
+            client.Ready           += HandleOnReady;
             client.MessageReceived += OnClientReceiveMessage;
             client.MessageUpdated  += OnClientUpdateMessage;
+        }
+        
+        private Task HandleOnReady()
+        {
+            var user = client.CurrentUser;
+            log.Information($"Logged into Discord as {user.Username}.");
+            return Task.CompletedTask;
         }
         
         private async Task HandleReceivedMessages()
@@ -249,14 +273,14 @@ namespace ServerCS.DiscordHandler
             try
             {
                 var old_get = await cache.GetOrDownloadAsync();
-                if (old_get is SocketMessage old)
+                if (old_get is SocketMessage old && old.Content != message.Content)
                 {
                     message_updated_queue.Enqueue((Old: old, New: message));
                 }
             }
-            catch (NullReferenceException)
+            catch (NullReferenceException e)
             {
-                // ignore, this is from cache.GetOrDownloadAsync()
+                log.Debug(e, "Ignored exception thrown by Cachable.GetOrDownloadAsync().");
             }
         }
         

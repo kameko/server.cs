@@ -31,10 +31,8 @@ namespace ServerCS.DiscordHandler
             channel = text_channel;
         }
         
-        public async Task<RestUserMessage> Send(OutgoingMessage message, bool dispose_after = true)
+        public async Task<RestUserMessage> Send(OutgoingMessage message)
         {
-            // if (message.Content.Length > DiscordConfig.MaxMessageSize)
-            
             RestUserMessage rum = null!;
             
             if (message.File is null)
@@ -57,12 +55,6 @@ namespace ServerCS.DiscordHandler
                     options   : message.RequestOptions,
                     isSpoiler : message.File.Spoiler
                 );
-            }
-            
-            // TODO: make sure this doesn't cause a problem.
-            if (dispose_after)
-            {
-                await message.DisposeAsync();
             }
             
             return rum;

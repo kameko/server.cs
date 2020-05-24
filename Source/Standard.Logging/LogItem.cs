@@ -5,7 +5,6 @@ namespace Standard.Logging
     using System.Collections.Generic;
     using System.Linq;
     using Microsoft.Extensions.Logging;
-    using ConsoleLogger;
     
     public class LogItem
     {

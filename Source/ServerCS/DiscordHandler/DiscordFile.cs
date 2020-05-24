@@ -7,22 +7,22 @@ namespace ServerCS.DiscordHandler
     using System.Threading.Tasks;
     using System.IO;
     
-    public class File : IDisposable, IAsyncDisposable
+    public class DiscordFile : IDisposable, IAsyncDisposable
     {
         public string FileName { get; set; }
         public Stream Stream { get; set; }
         public bool Spoiler { get; set; }
         
-        public File(string filename, Stream stream, bool spoiler)
+        public DiscordFile(string filename, Stream stream, bool spoiler)
         {
             FileName = filename;
             Stream   = stream;
             Spoiler  = spoiler;
         }
         
-        public File(string filename, Stream stream) : this(filename, stream, false) { }
+        public DiscordFile(string filename, Stream stream) : this(filename, stream, false) { }
         
-        public static File FromLocalFile(string path)
+        public static DiscordFile FromLocalFile(string path)
         {
             var fi       = new FileInfo(path);
             var filename = fi.Name;
@@ -34,10 +34,10 @@ namespace ServerCS.DiscordHandler
                 bufferSize : 4096,
                 useAsync   : true
             );
-            return new File(filename, stream);
+            return new DiscordFile(filename, stream);
         }
         
-        public static File FromNetwork(string uri)
+        public static DiscordFile FromNetwork(string uri)
         {
             // https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.socket 
             // https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.networkstream 

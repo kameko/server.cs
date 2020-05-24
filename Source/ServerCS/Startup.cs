@@ -16,6 +16,7 @@ namespace ServerCS
     using Standard.Logging;
     using Services;
     using DiscordHandler;
+    using DiscordHandler.Commands;
     
     public class Startup
     {
@@ -28,27 +29,23 @@ namespace ServerCS
             serviceProvider = null!;
         }
         
-        private Task Run(ILogger log, DiscordClient discord)
-        {
-            
-            return Task.CompletedTask;
-        }
-        
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<ConsoleLifetimeOptions>(opts => opts.SuppressStatusMessages = true);
             
             services.AddHostedService<LifetimeEventsHostedService>();
+            services.AddHostedService<RuntimeService>();
+            services.AddHostedService<DiscordService>();
             
+            services.AddSingleton<ICommandSubsystem, CommandSubsystem>();
             services.AddSingleton<IDiscordClient, DiscordClient>();
-            services.AddSingleton<Runtime>();
             
             services.AddControllers();
             
             serviceProvider = services.BuildServiceProvider();
         }
         
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> log)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDeveloperExceptionPage();
             
@@ -62,9 +59,6 @@ namespace ServerCS
             {
                 endpoints.MapControllers();
             });
-            
-            var runtime = ActivatorUtilities.CreateInstance<Runtime>(serviceProvider);
-            runtime.Start();
         }
     }
 }
