@@ -150,9 +150,55 @@ namespace ServerCS.Services.JavaScriptHost
             ));
         }
         
+        public void GrantImporting(bool local_only = false)
+        {
+            // TODO: test if this works
+            js_engine.SetValue("__environment__import", new Action<string>(
+                s =>
+                {
+                    var fi = new FileInfo(s);
+                    
+                    if (!fi.Exists)
+                    {
+                        return;
+                    }
+                    
+                    if (fi.Extension.ToLower() != ".js")
+                    {
+                        return;
+                    }
+                    
+                    if (local_only)
+                    {
+                        var org_di = new DirectoryInfo(js_file.FullName);
+                        var new_di = new DirectoryInfo(fi.FullName);
+                        if (!new_di.FullName.ToLower().StartsWith(org_di.FullName.ToLower()))
+                        {
+                            return;
+                        }
+                    }
+                    
+                    var script = File.ReadAllText(fi.FullName);
+                    js_engine.Execute(script);
+                }
+            ));
+        }
+        
+        public void GrantAll()
+        {
+            GrantLogging();
+            GrantSuicidalTendencies();
+            GrantImporting();
+        }
+        
         public void GrantType<T>(string name)
         {
             js_engine.SetValue(name, TypeReference.CreateTypeReference(js_engine, typeof(T)));
+        }
+        
+        public void GrantCallback(string name, Delegate callback)
+        {
+            js_engine.SetValue(name, callback);
         }
         
         private Engine SetupEngine(JavaScriptModel js_config)

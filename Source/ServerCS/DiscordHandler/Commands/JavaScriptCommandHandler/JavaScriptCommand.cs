@@ -49,8 +49,7 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
                                     file,
                                     global_storage
                                 );
-                                container.GrantLogging();
-                                container.GrantSuicidalTendencies();
+                                container.GrantAll();
                                 container.GrantType<JsDiscordMessage>("DiscordMessage");
                                 container.Initialize();
                                 scripts.Add(container);

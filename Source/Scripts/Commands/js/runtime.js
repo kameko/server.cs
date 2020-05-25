@@ -1,6 +1,8 @@
 
 var system = { }
 
+system.import = __environment__import;
+
 system.lifetime = { }
 system.lifetime.shutdown = __lifetime__shutdown;
 
