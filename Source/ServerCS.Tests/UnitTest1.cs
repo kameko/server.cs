@@ -35,7 +35,7 @@ namespace ServerCS.Tests
             var js_obj_raw = new TestObj1() { Id = 10, Content = "Hello!" };
             var v5 = JsValue.FromObject(engine, js_obj_raw);
             _output.WriteLine($"{v5.Type}");
-            var v6 = v5.AsObject().Get(JsValue.FromObject(engine, "Content"));
+            var v6 = v5.AsObject().Get(JsValue.FromObject(engine, "content"));
             _output.WriteLine($"{v6.Type}");
             _output.WriteLine($"{v6.AsString()}");
         }

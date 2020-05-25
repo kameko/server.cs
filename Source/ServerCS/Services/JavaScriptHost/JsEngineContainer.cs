@@ -8,12 +8,16 @@ namespace ServerCS.Services.JavaScriptHost
     using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using Standard.Logging;
     using Jint;
+    using Jint.Runtime.Interop;
     using Jint.Native;
     using ConfigurationModels;
     
     public class JsEngineContainer : IDisposable
     {
+        private ILogger log;
         private JavaScriptModel config;
         private FileInfo startup_file;
         private FileInfo js_file;
@@ -22,8 +26,9 @@ namespace ServerCS.Services.JavaScriptHost
         private CancellationTokenSource cts;
         private Engine js_engine;
         
-        public JsEngineContainer(JavaScriptModel js_config, FileInfo startup_file_source, FileInfo js_file_source, JsStorage global)
+        public JsEngineContainer(ILogger logger, JavaScriptModel js_config, FileInfo startup_file_source, FileInfo js_file_source, JsStorage global)
         {
+            log            = logger;
             config         = js_config;
             startup_file   = startup_file_source;
             js_file        = js_file_source;
@@ -36,6 +41,7 @@ namespace ServerCS.Services.JavaScriptHost
         }
         
         public static bool FromPaths(
+            ILogger logger,
             JavaScriptModel js_config,
             JsStorage global,
             string startup_source_path,
@@ -45,10 +51,10 @@ namespace ServerCS.Services.JavaScriptHost
         {
             var startup_fi = new FileInfo(startup_source_path);
             var main_fi    = new FileInfo(main_source_path);
-            var success    = validate(startup_fi) && validate(main_fi);
+            var success    = main_fi.Exists && main_fi.Extension.ToLower() == ".js";
             if (success)
             {
-                container = new JsEngineContainer(js_config, startup_fi, main_fi, global);
+                container = new JsEngineContainer(logger, js_config, startup_fi, main_fi, global);
                 return true;
             }
             else
@@ -56,8 +62,6 @@ namespace ServerCS.Services.JavaScriptHost
                 container = null;
                 return false;
             }
-            
-            bool validate(FileInfo fi) => fi.Exists && fi.Extension.ToLower() == ".js";
         }
         
         public void Reconfigure(JavaScriptModel js_config)
@@ -72,10 +76,13 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void Initialize()
         {
-            var js_startup_source = File.ReadAllText(startup_file.FullName);
-            var js_main_source    = File.ReadAllText(js_file.FullName);
+            if (startup_file.Exists && startup_file.Extension.ToLower() == ".js")
+            {
+                var js_startup_source = File.ReadAllText(startup_file.FullName);
+                js_engine.Execute(js_startup_source);
+            }
             
-            js_engine.Execute(js_startup_source);
+            var js_main_source = File.ReadAllText(js_file.FullName);
             js_engine.Execute(js_main_source);
         }
         
@@ -91,7 +98,7 @@ namespace ServerCS.Services.JavaScriptHost
             if (!(args is null) && args.Length > 0)
             {
                 var js_args = new JsValue[args.Length];
-                for (int i = 0; i > args.Length; i++)
+                for (int i = 0; i < args.Length; i++)
                 {
                     var arg_i = args[i];
                     if (arg_i is JsValue jsv)
@@ -122,20 +129,52 @@ namespace ServerCS.Services.JavaScriptHost
             Cancel();
         }
         
+        public void GrantLogging()
+        {
+            js_engine.SetValue("__log__information" , new Action<string>(s => log.Information(s)));
+            js_engine.SetValue("__log__warning"     , new Action<string>(s => log.Warning(s)));
+            js_engine.SetValue("__log__error"       , new Action<string>(s => log.Error(s)));
+            js_engine.SetValue("__log__critical"    , new Action<string>(s => log.Critical(s)));
+            js_engine.SetValue("__log__debug"       , new Action<string>(s => log.Debug(s)));
+            js_engine.SetValue("__log__trace"       , new Action<string>(s => log.Trace(s)));
+        }
+        
+        public void GrantSuicidalTendencies()
+        {
+            js_engine.SetValue("__lifetime__shutdown", new Action(
+                () =>
+                {
+                    log.Information($"System shutdown requested from JavaScript script at \"{js_file.FullName}\".");
+                    LifetimeEventsHostedService.StopApplication();
+                }
+            ));
+        }
+        
+        public void GrantType<T>(string name)
+        {
+            js_engine.SetValue(name, TypeReference.CreateTypeReference(js_engine, typeof(T)));
+        }
+        
         private Engine SetupEngine(JavaScriptModel js_config)
         {
-            return new Engine(options =>
+            var engine = new Engine(options =>
             {
                 // https://github.com/sebastienros/jint/blob/dev/Jint/Options.cs 
                 
                 /* TODO:
                 Hardcode:
                     AddObjectConverter(IObjectConverter objectConverter);
-                    CatchClrExceptions(Predicate<Exception> handler);
                 Consider:
                     SetWrapObjectHandler(Func<Engine, object, ObjectInstance> wrapObjectHandler);
                     SetReferencesResolver(IReferenceResolver resolver);
                 */
+                
+                options.CatchClrExceptions(e =>
+                {
+                    // TODO:
+                    log.Warning(e, $"JavaScript exception encountered in \"{js_file.FullName}\".");
+                    return true;
+                });
                 
                 options.Strict(true);
                 options.DebugMode(true);
@@ -173,6 +212,8 @@ namespace ServerCS.Services.JavaScriptHost
                     }
                 }
             });
+            
+            return engine;
         }
         
         private void SetupLocals()

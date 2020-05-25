@@ -31,6 +31,12 @@ namespace ServerCS.Services
         
         public async Task StartAsync(CancellationToken token)
         {
+            if (!File.Exists(discord.DiscordConfiguration.TokenFilePath))
+            {
+                log.Warning("Discord token file does not exist. Cannot log into Discord.");
+                return;
+            }
+            
             // TODO: a way to both log in invisible as well as just not logging in at all.
             var discord_token = await File.ReadAllTextAsync(discord.DiscordConfiguration.TokenFilePath, token);
             discord_token = discord_token.Trim();

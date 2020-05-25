@@ -7,6 +7,7 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
     using System.IO;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
+    using Standard.Logging;
     using Discord.WebSocket;
     using Jint;
     using Jint.Native;
@@ -28,10 +29,40 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
         public override Task Setup()
         {
             var config = CommandSubsystem.DiscordConfiguration;
-            // TODO: get javascript command paths (multiple) from config.
-            // DirectoryInfo.GetFiles returns FileInfo[].
-            // Make sure to check for the .js extension.
-            
+            foreach (var (name, model) in config.JavaScriptHostOptions)
+            {
+                var startup_fi = new FileInfo(model.StartupScriptPath);
+                var di = new DirectoryInfo(model.Directory);
+                if (di.Exists)
+                {
+                    var files = di.GetFiles();
+                    foreach (var file in files)
+                    {
+                        if (file.Exists && file.Extension.ToLower() == ".js")
+                        {
+                            try
+                            {
+                                var container = new JsEngineContainer(
+                                    Log,
+                                    model,
+                                    startup_fi,
+                                    file,
+                                    global_storage
+                                );
+                                container.GrantLogging();
+                                container.GrantSuicidalTendencies();
+                                container.GrantType<JsDiscordMessage>("DiscordMessage");
+                                container.Initialize();
+                                scripts.Add(container);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, $"Error when attempting to start new JavaScript container from \"{file.FullName}\".");
+                            }
+                        }
+                    }
+                }
+            }
             return Task.CompletedTask;
         }
         
