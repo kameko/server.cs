@@ -30,6 +30,8 @@ namespace ServerCS.Services.JavaScriptHost
         private string js_file_cache = string.Empty;
         private Dictionary<string, Action> permissions;
         
+        public string ScriptName => js_file.Name;
+        
         public JsEngineContainer(ILogger logger, JavaScriptModel js_config, FileInfo startup_file_source, FileInfo js_file_source, JsStorage global)
         {
             log            = logger;

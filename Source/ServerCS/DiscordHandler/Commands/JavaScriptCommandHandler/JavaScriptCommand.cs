@@ -10,6 +10,7 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
     using Standard.Logging;
     using Discord.WebSocket;
     using Jint;
+    using Jint.Runtime;
     using Jint.Native;
     using ConfigurationModels;
     using Services.JavaScriptHost;
@@ -93,11 +94,36 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
             
             foreach (var container in scripts)
             {
-                container.Reset();
-                var result = container.Call(func_name, args);
-                if (result.IsBoolean() && !stop_processing)
+                try
                 {
-                    stop_processing = result.AsBoolean();
+                    container.Reset();
+                    var result = container.Call(func_name, args);
+                    if (result.IsBoolean() && !stop_processing)
+                    {
+                        stop_processing = result.AsBoolean();
+                    }
+                }
+                catch (TimeoutException te)
+                {
+                    if (!(args is null) && args.Length > 0)
+                    {
+                        Log.Warning(te, $"Script {container.ScriptName} timed out when processing data: {{data}}", args);
+                    }
+                    else
+                    {
+                        Log.Warning(te, $"Script {container.ScriptName} timed out.");
+                    }
+                }
+                catch (MemoryLimitExceededException mlee)
+                {
+                    if (!(args is null) && args.Length > 0)
+                    {
+                        Log.Warning(mlee, $"Script {container.ScriptName} exceeded memory limit when processing data: {{data}}", args);
+                    }
+                    else
+                    {
+                        Log.Warning(mlee, $"Script {container.ScriptName} exceeded memory limit.");
+                    }
                 }
             }
             
