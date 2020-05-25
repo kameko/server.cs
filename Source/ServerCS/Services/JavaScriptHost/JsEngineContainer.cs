@@ -131,6 +131,8 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantLogging()
         {
+            js_engine.SetValue("__log__enabled", true);
+            
             js_engine.SetValue("__log__information" , new Action<string>(s => log.Information(s)));
             js_engine.SetValue("__log__warning"     , new Action<string>(s => log.Warning(s)));
             js_engine.SetValue("__log__error"       , new Action<string>(s => log.Error(s)));
@@ -139,8 +141,10 @@ namespace ServerCS.Services.JavaScriptHost
             js_engine.SetValue("__log__trace"       , new Action<string>(s => log.Trace(s)));
         }
         
-        public void GrantSuicidalTendencies()
+        public void GrantExistentialDread()
         {
+            js_engine.SetValue("__lifetime__enabled", true);
+            
             js_engine.SetValue("__lifetime__shutdown", new Action(
                 () =>
                 {
@@ -152,6 +156,8 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantImporting(bool local_only = false)
         {
+            js_engine.SetValue("__environment__has_importing", true);
+            
             // TODO: test if this works
             js_engine.SetValue("__environment__import", new Action<string>(
                 s =>
@@ -187,7 +193,7 @@ namespace ServerCS.Services.JavaScriptHost
         public void GrantAll()
         {
             GrantLogging();
-            GrantSuicidalTendencies();
+            GrantExistentialDread();
             GrantImporting();
         }
         
@@ -258,6 +264,10 @@ namespace ServerCS.Services.JavaScriptHost
                     }
                 }
             });
+            
+            engine.SetValue("__log__enabled", false);
+            engine.SetValue("__lifetime__enabled", false);
+            engine.SetValue("__environment__has_importing", false);
             
             return engine;
         }
