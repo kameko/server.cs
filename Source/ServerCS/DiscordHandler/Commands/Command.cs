@@ -23,6 +23,7 @@ namespace ServerCS.DiscordHandler.Commands
             CommandSubsystem     = commands;
         }
         
+        public virtual Task Setup() => Task.CompletedTask;
         public virtual void Dispose() { /* pass */ }
     }
 }

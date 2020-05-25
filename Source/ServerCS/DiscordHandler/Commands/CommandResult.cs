@@ -5,6 +5,11 @@ namespace ServerCS.DiscordHandler.Commands
     
     public abstract class CommandResult
     {
-        public bool StopProcessingCommands { get; protected set; }
+        public bool StopProcessingCommands { get; set; }
+        
+        public CommandResult()
+        {
+            
+        }
     }
 }

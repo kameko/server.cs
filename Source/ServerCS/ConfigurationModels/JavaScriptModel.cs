@@ -7,7 +7,8 @@ namespace ServerCS.ConfigurationModels
     public class JavaScriptModel
     {
         public string Directory { get; set; } = string.Empty;
-        public int CommandTimeout { get; set; }
+        public string StartupScriptPath { get; set; } = string.Empty;
+        public int Timeout { get; set; }
         public int LimitMemory { get; set; }
         public int LimitRecursion { get; set; }
         public bool AllowDebuggerStatement { get; set; }

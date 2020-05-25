@@ -56,9 +56,12 @@ namespace ServerCS.DiscordHandler.Commands
             }
         }
         
-        public Task Start()
+        public async Task Start()
         {
-            return Task.CompletedTask;
+            foreach (var (name, command) in commands)
+            {
+                await command.Setup();
+            }
         }
         
         public Task Stop()

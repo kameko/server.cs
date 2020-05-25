@@ -9,37 +9,62 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
     using Microsoft.Extensions.Logging;
     using Discord.WebSocket;
     using Jint;
-    using Jint.Runtime;
+    using Jint.Native;
     using ConfigurationModels;
     using Services.JavaScriptHost;
     
-    // TODO: get javascript command paths (multiple) from config.
-    // DirectoryInfo.GetFiles returns FileInfo[].
-    // Make sure to check for the .js extension.
-    
     public class JavaScriptCommand : Commands.CompleteCommandHandler
     {
+        private JsStorage global_storage;
         private List<JsEngineContainer> scripts;
         
         public JavaScriptCommand(ILogger logger, CommandSubsystem commands)
             : base(nameof(JavaScriptCommand), logger, commands)
         {
-            scripts = new List<JsEngineContainer>();
+            global_storage = new JsStorage();
+            scripts        = new List<JsEngineContainer>();
         }
         
-        public override Task<Result> ProcessClientReady()
+        public override Task Setup()
         {
-            throw new NotImplementedException();
+            var config = CommandSubsystem.DiscordConfiguration;
+            // TODO: get javascript command paths (multiple) from config.
+            // DirectoryInfo.GetFiles returns FileInfo[].
+            // Make sure to check for the .js extension.
+            
+            return Task.CompletedTask;
         }
         
-        public override Task<Result> ProcessReceivedMessage(SocketMessage message)
-        {
-            throw new NotImplementedException();
-        }
+        public override Task<Result> ProcessClientReady() => 
+            GeneralProcessor("on_client_ready");
         
-        public override Task<Result> ProcessUpdatedMessage(SocketMessage old_message, SocketMessage new_message)
+        public override Task<Result> ProcessReceivedMessage(SocketMessage message) =>
+            GeneralProcessor(
+                "on_message_received",
+                JsDiscordMessage.FromSocketMessage(message)
+            );
+        
+        public override Task<Result> ProcessUpdatedMessage(SocketMessage old_message, SocketMessage new_message) =>
+            GeneralProcessor(
+                "on_message_updated",
+                JsDiscordMessage.FromSocketMessage(old_message),
+                JsDiscordMessage.FromSocketMessage(new_message)
+            );
+        
+        private Task<Result> GeneralProcessor(string func_name, params object[]? args)
         {
-            throw new NotImplementedException();
+            var stop_processing = false;
+            
+            foreach (var container in scripts)
+            {
+                var result = container.Call(func_name, args);
+                if (result.IsBoolean() && !stop_processing)
+                {
+                    stop_processing = result.AsBoolean();
+                }
+            }
+            
+            return stop_processing ? StopProcessing() : Continue();
         }
     }
 }

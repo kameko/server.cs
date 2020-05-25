@@ -24,6 +24,9 @@ namespace ServerCS.DiscordHandler.Commands
             public abstract Task<Result> ProcessReceivedMessage(SocketMessage message);
             public abstract Task<Result> ProcessUpdatedMessage(SocketMessage old_message, SocketMessage new_message);
             
+            protected Task<Result> StopProcessing() => Task.FromResult(new Result() { StopProcessingCommands = true });
+            protected Task<Result> Continue() => Task.FromResult(new Result() { StopProcessingCommands = false });
+            
             public class Result : CommandResult
             {
                 
@@ -39,6 +42,9 @@ namespace ServerCS.DiscordHandler.Commands
             }
             
             public abstract Task<Result> Process();
+            
+            protected Task<Result> StopProcessing() => Task.FromResult(new Result() { StopProcessingCommands = true });
+            protected Task<Result> Continue() => Task.FromResult(new Result() { StopProcessingCommands = false });
             
             public class Result : CommandResult
             {
@@ -56,6 +62,9 @@ namespace ServerCS.DiscordHandler.Commands
             
             public abstract Task<Result> Process(SocketMessage message);
             
+            protected Task<Result> StopProcessing() => Task.FromResult(new Result() { StopProcessingCommands = true });
+            protected Task<Result> Continue() => Task.FromResult(new Result() { StopProcessingCommands = false });
+            
             public class Result : CommandResult
             {
                 
@@ -71,6 +80,9 @@ namespace ServerCS.DiscordHandler.Commands
             }
             
             public abstract Task<Result> Process(SocketMessage old_message, SocketMessage new_message);
+            
+            protected Task<Result> StopProcessing() => Task.FromResult(new Result() { StopProcessingCommands = true });
+            protected Task<Result> Continue() => Task.FromResult(new Result() { StopProcessingCommands = false });
             
             public class Result : CommandResult
             {
