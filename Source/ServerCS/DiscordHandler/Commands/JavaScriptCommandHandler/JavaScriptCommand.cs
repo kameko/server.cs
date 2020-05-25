@@ -38,6 +38,11 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
                     var files = di.GetFiles();
                     foreach (var file in files)
                     {
+                        if (file.Name.ToLower() == startup_fi.Name.ToLower())
+                        {
+                            continue;
+                        }
+                        
                         if (file.Exists && file.Extension.ToLower() == ".js")
                         {
                             try
