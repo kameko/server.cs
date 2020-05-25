@@ -26,10 +26,9 @@ namespace ServerCS.DiscordHandler.Commands
         
         private IConfiguration config;
         private ILogger log;
-        private ILogger command_log;
         private ConcurrentDictionary<string, Command> commands;
         
-        public CommandSubsystem(IConfiguration configuration, ILogger<CommandSubsystem> logger, ILogger<Command> command_logger)
+        public CommandSubsystem(IConfiguration configuration, ILogger<CommandSubsystem> logger)
         {
             Client               = null!;
             Registry             = new CommandRegistry();
@@ -37,7 +36,6 @@ namespace ServerCS.DiscordHandler.Commands
             
             config         = configuration;
             log            = logger;
-            command_log    = command_logger;
             commands       = new ConcurrentDictionary<string, Command>();
             
             AddCommands();
@@ -71,7 +69,7 @@ namespace ServerCS.DiscordHandler.Commands
         
         public bool AddCommand(Func<ILogger, CommandSubsystem, Command> command_factory)
         {
-            var command = command_factory.Invoke(command_log, this);
+            var command = command_factory.Invoke(log, this);
             var success = commands.TryAdd(command.Name, command);
             return success;
         }

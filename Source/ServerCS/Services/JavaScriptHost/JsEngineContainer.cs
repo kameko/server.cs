@@ -26,6 +26,10 @@ namespace ServerCS.Services.JavaScriptHost
         private CancellationTokenSource cts;
         private Engine js_engine;
         
+        private string startup_file_cache = string.Empty;
+        private string js_file_cache = string.Empty;
+        private Dictionary<string, Action> permissions;
+        
         public JsEngineContainer(ILogger logger, JavaScriptModel js_config, FileInfo startup_file_source, FileInfo js_file_source, JsStorage global)
         {
             log            = logger;
@@ -36,6 +40,8 @@ namespace ServerCS.Services.JavaScriptHost
             local_storage  = new JsStorage();
             cts            = new CancellationTokenSource();
             js_engine      = SetupEngine(js_config);
+            
+            permissions = new Dictionary<string, Action>();
             
             SetupLocals();
         }
@@ -66,12 +72,34 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void Reconfigure(JavaScriptModel js_config)
         {
+            config = js_config;
+            Reset();
+            ClearLocalStorage();
+            SetupLocals();
+        }
+        
+        public void Reset()
+        {
             Cancel();
             cts       = new CancellationTokenSource();
-            config    = js_config;
             js_engine = SetupEngine(config);
+            
+            foreach (var (permission, callback) in permissions)
+            {
+                callback.Invoke();
+            }
+            
+            if (!string.IsNullOrWhiteSpace(startup_file_cache))
+            {
+                js_engine.Execute(startup_file_cache);
+            }
+            
+            js_engine.Execute(js_file_cache);
+        }
+        
+        public void ClearLocalStorage()
+        {
             local_storage.Clear();
-            SetupLocals();
         }
         
         public void Initialize()
@@ -80,10 +108,12 @@ namespace ServerCS.Services.JavaScriptHost
             {
                 var js_startup_source = File.ReadAllText(startup_file.FullName);
                 js_engine.Execute(js_startup_source);
+                startup_file_cache = js_startup_source;
             }
             
             var js_main_source = File.ReadAllText(js_file.FullName);
             js_engine.Execute(js_main_source);
+            js_file_cache = js_main_source;
         }
         
         public JsValue Call(string func_name, params object[]? args)
@@ -129,8 +159,60 @@ namespace ServerCS.Services.JavaScriptHost
             Cancel();
         }
         
+        public void GrantLocalStorage()
+        {
+            permissions.TryAdd(nameof(GrantLocalStorage), GrantLocalStorage);
+            
+            js_engine.SetValue("__storage__enabled", true);
+            
+            js_engine.SetValue("__storage__get", new Func<string, string?>(
+                key =>
+                {
+                    var elm = local_storage.Get(key);
+                    if (elm is StringJsStorageElement sjsse)
+                    {
+                        return sjsse.Value;
+                    }
+                    return null;
+                }
+            ));
+            js_engine.SetValue("__storage__set", new Action<string, string>(
+                (key, value) =>
+                {
+                    local_storage.Set(key, new StringJsStorageElement(key, value));
+                }
+            ));
+        }
+        
+        public void GrantGlobalStorage()
+        {
+            permissions.TryAdd(nameof(GrantGlobalStorage), GrantGlobalStorage);
+            
+            js_engine.SetValue("__storage__global__enabled", true);
+            
+            js_engine.SetValue("__storage__global__get", new Func<string, string?>(
+                key =>
+                {
+                    var elm = global_storage.Get(key);
+                    if (elm is StringJsStorageElement sjsse)
+                    {
+                        return sjsse.Value;
+                    }
+                    return null;
+                }
+            ));
+            js_engine.SetValue("__storage__global__set", new Action<string, string>(
+                (key, value) =>
+                {
+                    global_storage.Set(key, new StringJsStorageElement(key, value));
+                }
+            ));
+        }
+        
         public void GrantLogging()
         {
+            permissions.TryAdd(nameof(GrantLogging), GrantLogging);
+            
             js_engine.SetValue("__log__enabled", true);
             
             js_engine.SetValue("__log__information" , new Action<string>(s => log.Information(s)));
@@ -143,6 +225,8 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantExistentialDread()
         {
+            permissions.TryAdd(nameof(GrantExistentialDread), GrantExistentialDread);
+            
             js_engine.SetValue("__lifetime__enabled", true);
             
             js_engine.SetValue("__lifetime__shutdown", new Action(
@@ -160,6 +244,8 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantImporting(bool local_only = false)
         {
+            permissions.TryAdd(nameof(GrantImporting), () => GrantImporting(local_only));
+            
             js_engine.SetValue("__environment__has_importing", true);
             
             // TODO: test if this works
@@ -196,6 +282,8 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantAll()
         {
+            GrantLocalStorage();
+            GrantGlobalStorage();
             GrantLogging();
             GrantExistentialDread();
             GrantImporting();

@@ -38,13 +38,14 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
                     var files = di.GetFiles();
                     foreach (var file in files)
                     {
-                        if (file.Name.ToLower() == startup_fi.Name.ToLower())
+                        if (file.FullName.ToLower() == startup_fi.FullName.ToLower())
                         {
                             continue;
                         }
                         
                         if (file.Exists && file.Extension.ToLower() == ".js")
                         {
+                            Log.Information($"Loading JavaScript command \"{file.Name}\".");
                             try
                             {
                                 var container = new JsEngineContainer(
@@ -92,6 +93,7 @@ namespace ServerCS.DiscordHandler.Commands.JavaScriptCommandHandler
             
             foreach (var container in scripts)
             {
+                container.Reset();
                 var result = container.Call(func_name, args);
                 if (result.IsBoolean() && !stop_processing)
                 {
