@@ -149,7 +149,11 @@ namespace ServerCS.Services.JavaScriptHost
                 () =>
                 {
                     log.Information($"System shutdown requested from JavaScript script at \"{js_file.FullName}\".");
-                    LifetimeEventsHostedService.StopApplication();
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(500);
+                        LifetimeEventsHostedService.StopApplication();
+                    });
                 }
             ));
         }
