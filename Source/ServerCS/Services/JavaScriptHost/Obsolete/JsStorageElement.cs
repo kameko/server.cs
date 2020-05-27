@@ -1,5 +1,5 @@
 
-namespace ServerCS.Services.JavaScriptHost
+namespace ServerCS.Services.JavaScriptHost.Obsolete
 {
     using System;
     using System.Collections.Generic;

@@ -1,5 +1,5 @@
 
-namespace ServerCS.Services.JavaScriptHost
+namespace ServerCS.Services.JavaScriptHost.Obsolete
 {
     using System;
     using System.Collections.Generic;
@@ -15,6 +15,14 @@ namespace ServerCS.Services.JavaScriptHost
     using Jint.Native;
     using ConfigurationModels;
     
+    // FIXME: this is all a bit janky, probably need to
+    // heavily refactor. Basically rewrite all of this
+    // to be way more modular, split it into classes and stuff.
+    // - Get rid of the Call method, instead have pluggable strongly-
+    //   typed classes that translate the calls.
+    // - Redo the storage system to either accept anything instead of just
+    //   a string, or accept an object instead of a string if not possible.
+    
     public class JsEngineContainer : IDisposable
     {
         private ILogger log;
@@ -28,8 +36,8 @@ namespace ServerCS.Services.JavaScriptHost
         
         private string startup_file_cache = string.Empty;
         private string js_file_cache = string.Empty;
-        private Dictionary<string, Action> permissions;
         
+        public Dictionary<string, Action> Permissions { get; set; }
         public string ScriptName => js_file.Name;
         
         public JsEngineContainer(ILogger logger, JavaScriptModel js_config, FileInfo startup_file_source, FileInfo js_file_source, JsStorage global)
@@ -43,7 +51,7 @@ namespace ServerCS.Services.JavaScriptHost
             cts            = new CancellationTokenSource();
             js_engine      = SetupEngine(js_config);
             
-            permissions = new Dictionary<string, Action>();
+            Permissions    = new Dictionary<string, Action>();
             
             SetupLocals();
         }
@@ -86,7 +94,7 @@ namespace ServerCS.Services.JavaScriptHost
             cts       = new CancellationTokenSource();
             js_engine = SetupEngine(config);
             
-            foreach (var (permission, callback) in permissions)
+            foreach (var (permission, callback) in Permissions)
             {
                 callback.Invoke();
             }
@@ -163,7 +171,7 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantLocalStorage()
         {
-            permissions.TryAdd(nameof(GrantLocalStorage), GrantLocalStorage);
+            Permissions.TryAdd(nameof(GrantLocalStorage), GrantLocalStorage);
             
             js_engine.SetValue("__storage__enabled", true);
             
@@ -188,7 +196,7 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantGlobalStorage()
         {
-            permissions.TryAdd(nameof(GrantGlobalStorage), GrantGlobalStorage);
+            Permissions.TryAdd(nameof(GrantGlobalStorage), GrantGlobalStorage);
             
             js_engine.SetValue("__storage__global__enabled", true);
             
@@ -213,7 +221,7 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantLogging()
         {
-            permissions.TryAdd(nameof(GrantLogging), GrantLogging);
+            Permissions.TryAdd(nameof(GrantLogging), GrantLogging);
             
             js_engine.SetValue("__log__enabled", true);
             
@@ -227,7 +235,7 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantExistentialDread()
         {
-            permissions.TryAdd(nameof(GrantExistentialDread), GrantExistentialDread);
+            Permissions.TryAdd(nameof(GrantExistentialDread), GrantExistentialDread);
             
             js_engine.SetValue("__lifetime__enabled", true);
             
@@ -246,7 +254,7 @@ namespace ServerCS.Services.JavaScriptHost
         
         public void GrantImporting(bool local_only = false)
         {
-            permissions.TryAdd(nameof(GrantImporting), () => GrantImporting(local_only));
+            Permissions.TryAdd(nameof(GrantImporting), () => GrantImporting(local_only));
             
             js_engine.SetValue("__environment__has_importing", true);
             

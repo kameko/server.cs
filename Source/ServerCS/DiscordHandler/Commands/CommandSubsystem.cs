@@ -12,7 +12,6 @@ namespace ServerCS.DiscordHandler.Commands
     using Discord;
     using Discord.WebSocket;
     using ConfigurationModels;
-    using JavaScriptCommandHandler;
     
     public class CommandSubsystem : ICommandSubsystem
     {
@@ -43,7 +42,8 @@ namespace ServerCS.DiscordHandler.Commands
         
         private void AddCommands()
         {
-            AddCommand((logger, self) => new JavaScriptCommand(logger, self));
+            // AddCommand((logger, self) => new JavaScriptCommand(logger, self));
+            
         }
         
         public void SetClient(DiscordClient client)
