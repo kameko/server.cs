@@ -16,7 +16,6 @@ namespace ServerCS
     using Standard.Logging;
     using Services;
     using DiscordHandler;
-    using DiscordHandler.Commands;
     
     public class Startup
     {
@@ -37,7 +36,6 @@ namespace ServerCS
             services.AddHostedService<RuntimeService>();
             services.AddHostedService<DiscordService>();
             
-            services.AddSingleton<ICommandSubsystem, CommandSubsystem>();
             services.AddSingleton<IDiscordClient, DiscordClient>();
             
             services.AddControllers();

@@ -14,7 +14,6 @@ namespace ServerCS.DiscordHandler
     using ConfigurationModels;
     using Discord;
     using Discord.WebSocket;
-    using Commands;
     
     public class DiscordClient : IDiscordClient
     {
@@ -23,7 +22,6 @@ namespace ServerCS.DiscordHandler
         private ILogger log;
         private CancellationTokenSource cts;
         private DiscordSocketClient client;
-        private ICommandSubsystem commands;
         
         private ConcurrentQueue<SocketMessage> message_queue;
         private ConcurrentQueue<(SocketMessage Old, SocketMessage New)> message_updated_queue;
@@ -46,15 +44,12 @@ namespace ServerCS.DiscordHandler
         /// </summary>
         public event Func<SocketMessage, SocketMessage, Task> OnMessageUpdated;
         
-        public DiscordClient(IConfiguration configuration, ILogger<DiscordClient> logger, ICommandSubsystem command_subsystem)
+        public DiscordClient(IConfiguration configuration, ILogger<DiscordClient> logger)
         {
             config         = configuration;
             discord_config = DiscordModel.FromConfiguration(configuration);
             log            = logger;
             cts            = new CancellationTokenSource();
-            commands       = command_subsystem;
-            
-            commands.SetClient(this);
             
             var dsc = new DiscordSocketConfig()
             {
@@ -81,14 +76,12 @@ namespace ServerCS.DiscordHandler
             cts = new CancellationTokenSource();
             await client.LoginAsync(TokenType.Bot, token);
             await client.StartAsync();
-            await commands.Start();
             StartEventLoop();
         }
         
         public async Task Stop()
         {
             cts.Cancel();
-            await commands.Stop();
             await client.LogoutAsync();
             await client.StopAsync();
         }
@@ -119,7 +112,6 @@ namespace ServerCS.DiscordHandler
         
         public void Dispose()
         {
-            commands.Dispose();
             client.Dispose();
         }
         
@@ -229,7 +221,6 @@ namespace ServerCS.DiscordHandler
                 }
                 
                 await OnMessageReceived.Invoke(message!);
-                await commands.ProcessMessageReceived(message!);
             }
         }
         
@@ -249,7 +240,6 @@ namespace ServerCS.DiscordHandler
                 }
                 
                 await OnMessageUpdated.Invoke(update.Old, update.New);
-                await commands.ProcessMessageUpdated(update.Old, update.New);
             }
         }
         
@@ -263,11 +253,11 @@ namespace ServerCS.DiscordHandler
             client.MessageUpdated  += OnClientUpdateMessage;
         }
         
-        private async Task HandleOnReady()
+        private Task HandleOnReady()
         {
             var user = client.CurrentUser;
             log.Information($"Logged into Discord as {user.Username}.");
-            await commands.ProcessOnClientReady();
+            return Task.CompletedTask;
         }
         
         private Task OnClientReceiveMessage(SocketMessage message)
