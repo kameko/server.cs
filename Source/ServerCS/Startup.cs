@@ -33,6 +33,7 @@ namespace ServerCS
             services.Configure<ConsoleLifetimeOptions>(opts => opts.SuppressStatusMessages = true);
             
             services.AddHostedService<LifetimeEventsHostedService>();
+            services.AddHostedService<PersonalityHostedService>();
             services.AddHostedService<RuntimeService>();
             services.AddHostedService<DiscordService>();
             
