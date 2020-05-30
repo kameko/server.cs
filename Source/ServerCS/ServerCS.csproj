@@ -11,6 +11,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0-preview.4.20220.10" />
     <PackageReference Include="Jint" Version="3.0.0-beta-1778" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.3.0" />
+    <PackageReference Include="Microsoft.ML.Probabilistic" Version="0.3.1912.403" />
+    <PackageReference Include="Microsoft.ML.Probabilistic.Learners" Version="0.3.1912.403" />
+    <PackageReference Include="Microsoft.ML.Probabilistic.Compiler" Version="0.3.1912.403" />
+    <PackageReference Include="Catalyst" Version="0.0.8431" />
   </ItemGroup>
 
   <ItemGroup>
